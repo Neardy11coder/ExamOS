@@ -14,6 +14,7 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.commands.bootstrap_faculty import main as cli_main, run_bootstrap
@@ -173,6 +174,32 @@ class TestFacultyProvisioningService:
         authenticated = authenticate_user(test_db_session, email=email, password=password)
         assert authenticated is not None
         assert authenticated.role == "FACULTY_ADMIN"
+
+    def test_provisioned_faculty_local_email_can_authenticate_via_api(
+        self, client: TestClient, test_db_session: Session, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Verify that a faculty account using .local can log in and view profile via API."""
+        monkeypatch.setattr(settings, "APP_ENV", "development")
+        monkeypatch.setattr(settings, "ALLOW_LOCAL_EMAIL_DOMAINS", None)
+        assert settings.allow_local_email_domains is True
+
+        email = f"faculty_{uuid.uuid4().hex[:8]}@examos.local"
+        password = "FacultyLocalPass123!"
+
+        provision_faculty_account(test_db_session, email=email, password=password)
+
+        login_resp = client.post(
+            "/api/v1/auth/login",
+            json={"email": email, "password": password},
+        )
+        assert login_resp.status_code == 200
+        data = login_resp.json()
+        assert data["user"]["email"] == email
+        assert data["user"]["role"] == "FACULTY_ADMIN"
+
+        me_resp = client.get("/api/v1/auth/me")
+        assert me_resp.status_code == 200
+        assert me_resp.json()["role"] == "FACULTY_ADMIN"
 
 
 class TestFacultyBootstrapCLI:

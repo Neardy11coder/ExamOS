@@ -39,6 +39,7 @@ from app.core.security import (
     hash_password,
 )
 from app.models.user import User
+from app.schemas.auth import LoginRequest, RegisterRequest
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -429,3 +430,162 @@ class TestRoleBoundaries:
         me_resp = client.get(f"{_BASE}/me")
         assert me_resp.status_code == status.HTTP_200_OK
         assert me_resp.json()["role"] == "STUDENT"
+
+
+# ---------------------------------------------------------------------------
+# Email validation environment boundary tests
+# ---------------------------------------------------------------------------
+
+
+class TestEmailValidationEnvironment:
+    """
+    Verifies that '.local' addresses are permitted in development/test,
+    strictly rejected in production (even if override=True), and standard addresses work in both.
+    """
+
+    @pytest.mark.parametrize("dev_env", ["development", "dev", "test", "testing", "DEVELOPMENT", "TEST"])
+    def test_local_email_accepted_in_development_and_test(
+        self, dev_env: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """In explicitly configured dev/test environments, .local email addresses are accepted."""
+        monkeypatch.setattr(settings, "APP_ENV", dev_env)
+        monkeypatch.setattr(settings, "ALLOW_LOCAL_EMAIL_DOMAINS", None)
+        assert settings.allow_local_email_domains is True
+
+        req = RegisterRequest(
+            email="dev_student@examos.local",
+            display_name="Dev Student",
+            password="StrongPassword123!",
+        )
+        assert req.email == "dev_student@examos.local"
+
+        login_req = LoginRequest(
+            email="faculty@examos.local",
+            password="FacultyPassword123!",
+        )
+        assert login_req.email == "faculty@examos.local"
+
+    @pytest.mark.parametrize("prod_env", ["production", "prod", "PRODUCTION", "PROD"])
+    @pytest.mark.parametrize("override", [None, True, False])
+    def test_production_boundary_strictly_rejects_local_domains(
+        self, prod_env: str, override: bool | None, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Production environments strictly reject .local domains even if override=True."""
+        monkeypatch.setattr(settings, "APP_ENV", prod_env)
+        monkeypatch.setattr(settings, "ALLOW_LOCAL_EMAIL_DOMAINS", override)
+        assert settings.allow_local_email_domains is False
+
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            RegisterRequest(
+                email="student@examos.local",
+                display_name="Prod Student",
+                password="StrongPassword123!",
+            )
+
+        with pytest.raises(ValidationError):
+            LoginRequest(
+                email="faculty@examos.local",
+                password="FacultyPassword123!",
+            )
+
+        # API endpoints return 422
+        resp = client.post(
+            f"{_BASE}/register",
+            json=_reg_payload(email="student@examos.local"),
+        )
+        assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        login_resp = client.post(
+            f"{_BASE}/login",
+            json={"email": "faculty@examos.local", "password": "AnyPassword123!"},
+        )
+        assert login_resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    @pytest.mark.parametrize("unknown_env", ["staging", "STAGING", "qa", "preview", "unknown", ""])
+    @pytest.mark.parametrize("override", [None, True, False])
+    def test_unknown_environments_default_to_rejecting_local_domains(
+        self, unknown_env: str, override: bool | None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Unknown environments (including staging) default to rejecting local domains."""
+        monkeypatch.setattr(settings, "APP_ENV", unknown_env)
+        monkeypatch.setattr(settings, "ALLOW_LOCAL_EMAIL_DOMAINS", override)
+        assert settings.allow_local_email_domains is False
+
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            RegisterRequest(
+                email="student@examos.local",
+                display_name="Student",
+                password="StrongPassword123!",
+            )
+
+    @pytest.mark.parametrize("dev_env", ["development", "dev", "test", "testing"])
+    def test_dev_test_environments_honor_explicit_override_disable(
+        self, dev_env: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """In dev/test, ALLOW_LOCAL_EMAIL_DOMAINS=False explicitly disables local domains."""
+        monkeypatch.setattr(settings, "APP_ENV", dev_env)
+        monkeypatch.setattr(settings, "ALLOW_LOCAL_EMAIL_DOMAINS", False)
+        assert settings.allow_local_email_domains is False
+
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            RegisterRequest(
+                email="student@examos.local",
+                display_name="Student",
+                password="StrongPassword123!",
+            )
+
+    def test_standard_email_accepted_in_production(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Standard public email addresses are accepted under production configuration."""
+        monkeypatch.setattr(settings, "APP_ENV", "production")
+        monkeypatch.setattr(settings, "ALLOW_LOCAL_EMAIL_DOMAINS", None)
+        assert settings.allow_local_email_domains is False
+
+        req = RegisterRequest(
+            email="user@university.edu",
+            display_name="Uni Student",
+            password="StrongPassword123!",
+        )
+        assert req.email == "user@university.edu"
+
+    def test_malformed_local_email_rejected_even_in_development(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Malformed .local addresses are rejected even in development environments."""
+        monkeypatch.setattr(settings, "APP_ENV", "development")
+        monkeypatch.setattr(settings, "ALLOW_LOCAL_EMAIL_DOMAINS", None)
+        assert settings.allow_local_email_domains is True
+
+        from pydantic import ValidationError
+
+        malformed_cases = [
+            "user@.local",
+            "bad..dots@examos.local",
+            "faculty space@examos.local",
+            "@examos.local",
+            "faculty@-examos.local",
+        ]
+        for bad_email in malformed_cases:
+            with pytest.raises(ValidationError):
+                RegisterRequest(
+                    email=bad_email,
+                    display_name="Student",
+                    password="StrongPassword123!",
+                )
+
+    def test_openapi_request_schemas_expose_email_format(self) -> None:
+        """OpenAPI request schemas still expose 'format': 'email'."""
+        from app.main import app
+
+        schema = app.openapi()
+        register_schema = schema["components"]["schemas"]["RegisterRequest"]
+        login_schema = schema["components"]["schemas"]["LoginRequest"]
+        assert register_schema["properties"]["email"]["format"] == "email"
+        assert login_schema["properties"]["email"]["format"] == "email"

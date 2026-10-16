@@ -15,7 +15,36 @@ class Settings(BaseSettings):
 
     # Application environment
     APP_ENV: str = "development"
+    ALLOW_LOCAL_EMAIL_DOMAINS: bool | None = None
     APP_SECRET_KEY: str
+
+    @property
+    def allow_local_email_domains(self) -> bool:
+        """
+        Whether '.local' email domains are permitted (e.g. faculty@examos.local).
+
+        Security invariants:
+        - Handled case-insensitively and whitespace-trimmed.
+        - Production ('production', 'prod') NEVER permits local domains under any
+          circumstances, strictly ignoring ALLOW_LOCAL_EMAIL_DOMAINS even if True.
+        - Recognized dev/test environments ('development', 'dev', 'test', 'testing')
+          permit local domains by default, and honor ALLOW_LOCAL_EMAIL_DOMAINS if set.
+        - All unknown environments (including 'staging') default to rejecting local domains.
+        """
+        env = (self.APP_ENV or "").strip().lower()
+
+        # Hard boundary: Production never allows local domains under any circumstances
+        if env in ("production", "prod"):
+            return False
+
+        # Recognized dev/test environments
+        if env in ("development", "dev", "test", "testing"):
+            if self.ALLOW_LOCAL_EMAIL_DOMAINS is not None:
+                return bool(self.ALLOW_LOCAL_EMAIL_DOMAINS)
+            return True
+
+        # Unknown environments (including staging) default to rejecting local domains
+        return False
 
     # Database configuration
     DATABASE_URL: str
