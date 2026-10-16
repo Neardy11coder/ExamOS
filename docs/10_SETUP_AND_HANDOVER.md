@@ -152,27 +152,37 @@ Update this section at the end of each development session or before switching c
 ### Current status
 
 - **Last updated:** 2026-10-16
-- **Current milestone:** M1 — Authentication & Base Schema (next)
-- **Last known good commit:** Milestone 0 scaffold (uncommitted — no Git initialized yet)
-- **Working features:** PostgreSQL container healthy; `/api/v1/health` returns 200 with `database: connected`; TypeScript compiles cleanly
-- **Failing tests / known bugs:** None known
+- **Current milestone:** Milestone 1A — Authentication (M1-AUTH-1 completed)
+- **Last known good commit:** 4e6cedb — chore: ignore generated TypeScript build info
+- **Working features:**
+  - PostgreSQL 16 container `examos-dev-20261016-db-1` healthy on `127.0.0.1:5433`
+  - Alembic migration `2efc4c54e793` (`users` table) applied to both `examos` and `examos_test`
+  - `/api/v1/health` returns 200 with `database: connected`
+  - `POST /api/v1/auth/register` (forces `STUDENT` role, enforces duplicate email 409, validates inputs)
+  - `POST /api/v1/auth/login` (sets HttpOnly JWT cookie `examos_access` + JS-readable CSRF cookie `examos_csrf`, returns generic 401 on invalid/deactivated credentials)
+  - `POST /api/v1/auth/logout` (clears cookies, requires valid JWT + CSRF header `X-CSRF-Token`)
+  - `GET /api/v1/auth/me` (returns authenticated user profile; requires valid JWT cookie)
+  - Password hashing via bcrypt (`passlib[bcrypt]`), JWT via HS256 (`PyJWT`), CSRF via 32-byte hex tokens
+  - Role guard dependencies (`require_student`, `require_faculty`)
+  - Frontend TypeScript compiles and production build succeeds
+- **Failing tests / known bugs:** None. All 39 backend tests passing.
 
 ### Commands verified
 
 | Command | Environment | Result | Date |
 |---|---|---|---|
 | `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container `examos-dev-20261016-db-1` healthy on `127.0.0.1:5433` | 2026-10-16 |
-| `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All 37 packages installed successfully | 2026-10-16 |
-| `pytest backend\tests\ -v` | Python 3.11.9, venv | 2 passed (`test_health_endpoint_healthy`, `test_health_endpoint_contract`) | 2026-10-16 |
-| `alembic stamp base` (from `backend/`) | Python 3.11.9, venv | Connected to `examos` via `MIGRATION_DATABASE_URL`; stamped base | 2026-10-16 |
-| `npx tsc --noEmit` | Node.js / npm | 0 errors | 2026-10-16 |
-| `npm install` (from `frontend/`) | Node.js LTS | 137 packages installed | 2026-10-16 |
+| `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages including `email-validator==2.3.0` installed | 2026-10-16 |
+| `pytest backend\tests\test_auth.py -v` | Python 3.11.9, venv | 37 passed against `examos_test` | 2026-10-16 |
+| `pytest backend\tests\ -v` | Python 3.11.9, venv | 39 passed (37 auth + 2 health) | 2026-10-16 |
+| `alembic upgrade head` (from `backend/`) | Python 3.11.9, venv | Applied revision `2efc4c54e793` to `examos` and `examos_test` | 2026-10-16 |
+| `npm run build` (from `frontend/`) | Node.js LTS, Vite | Production build succeeded (`tsc -b && vite build`) | 2026-10-16 |
 
 ### Next three tasks
 
-1. **M1-AUTH-1**: Create Alembic migration for `users` table; implement `/api/v1/auth/register`, `/api/v1/auth/login`, `/api/v1/auth/logout` with JWT cookie auth and CSRF protection.
-2. **M1-AUTH-2**: Seed faculty user from `SEED_FACULTY_EMAIL` / `SEED_FACULTY_PASSWORD` env vars; confirm student self-registration forces `STUDENT` role.
-3. **M1-SCHEMA-1**: Create Alembic migration for `topics`, `examinations`, `questions`, `options` tables; implement faculty CRUD endpoints per `docs/04_API_CONTRACT.md`.
+1. **M1-AUTH-2**: Seed faculty user from `SEED_FACULTY_EMAIL` / `SEED_FACULTY_PASSWORD` env vars / management command; verify role boundary invariants.
+2. **M1-SCHEMA-1**: Create Alembic migration for `topics`, `examinations`, `questions`, `options` tables; implement faculty question-bank CRUD endpoints per `docs/04_API_CONTRACT.md`.
+3. **M1-EXAM-1**: Exam authoring & publishing workflow with immutable snapshot upon publication.
 
 ### Decisions not to re-open without a real issue
 
