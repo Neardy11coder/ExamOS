@@ -1,0 +1,29 @@
+name: examos-dev-20261016
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER:-examos_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+      POSTGRES_DB: examos
+      MIGRATOR_DB_USER: ${POSTGRES_MIGRATOR_USER:-examos_migrator}
+      MIGRATOR_DB_PASSWORD: ${POSTGRES_MIGRATOR_PASSWORD}
+      APP_DB_USER: ${POSTGRES_APP_USER:-examos_app}
+      APP_DB_PASSWORD: ${POSTGRES_APP_PASSWORD}
+      TEST_DB_USER: ${POSTGRES_TEST_USER:-examos_test_runner}
+      TEST_DB_PASSWORD: ${POSTGRES_TEST_PASSWORD}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ADMIN_USER:-examos_admin} -d examos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
