@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     MIGRATION_DATABASE_URL: str | None = None
     TEST_DATABASE_URL: str | None = None
+    PROVISIONER_DATABASE_URL: str | None = None
 
     # CORS and security
     FRONTEND_ORIGIN: str = "http://localhost:5173"

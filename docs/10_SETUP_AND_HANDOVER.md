@@ -165,7 +165,8 @@ Update this section at the end of each development session or before switching c
   - Password hashing via bcrypt (`passlib[bcrypt]`), JWT via HS256 (`PyJWT`), CSRF via 32-byte hex tokens
   - Role guard dependencies (`require_student`, `require_faculty`)
   - Frontend TypeScript compiles and production build succeeds
-- **Failing tests / known bugs:** None. All 39 backend tests passing.
+  - Dedicated least-privilege `examos_provisioner` role and idempotent faculty bootstrap command (`python -m app.commands.bootstrap_faculty`)
+- **Failing tests / known bugs:** None. All 49 backend tests passing.
 
 ### Commands verified
 
@@ -174,15 +175,17 @@ Update this section at the end of each development session or before switching c
 | `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container `examos-dev-20261016-db-1` healthy on `127.0.0.1:5433` | 2026-10-16 |
 | `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages including `email-validator==2.3.0` installed | 2026-10-16 |
 | `pytest backend\tests\test_auth.py -v` | Python 3.11.9, venv | 37 passed against `examos_test` | 2026-10-16 |
-| `pytest backend\tests\ -v` | Python 3.11.9, venv | 39 passed (37 auth + 2 health) | 2026-10-16 |
+| `pytest backend\tests\test_faculty_provisioning.py -v` | Python 3.11.9, venv | 10 passed against `examos_test` | 2026-10-16 |
+| `pytest backend\tests\ -v` | Python 3.11.9, venv | 49 passed (37 auth + 10 faculty provisioning + 2 health) | 2026-10-16 |
 | `alembic upgrade head` (from `backend/`) | Python 3.11.9, venv | Applied revision `2efc4c54e793` to `examos` and `examos_test` | 2026-10-16 |
+| `python -m app.commands.bootstrap_faculty` | Python 3.11.9, venv | Provisioned initial `FACULTY_ADMIN` account; idempotent `EXISTS` on rerun | 2026-10-16 |
 | `npm run build` (from `frontend/`) | Node.js LTS, Vite | Production build succeeded (`tsc -b && vite build`) | 2026-10-16 |
 
 ### Next three tasks
 
-1. **M1-AUTH-2**: Seed faculty user from `SEED_FACULTY_EMAIL` / `SEED_FACULTY_PASSWORD` env vars / management command; verify role boundary invariants.
-2. **M1-SCHEMA-1**: Create Alembic migration for `topics`, `examinations`, `questions`, `options` tables; implement faculty question-bank CRUD endpoints per `docs/04_API_CONTRACT.md`.
-3. **M1-EXAM-1**: Exam authoring & publishing workflow with immutable snapshot upon publication.
+1. **M1-SCHEMA-1**: Create Alembic migration for `topics`, `examinations`, `questions`, `options` tables; implement faculty question-bank CRUD endpoints per `docs/04_API_CONTRACT.md`.
+2. **M1-EXAM-1**: Exam authoring & publishing workflow with immutable snapshot upon publication.
+3. **M1-ATTEMPT-1**: Exam attempt lifecycle (`START` -> `IN_PROGRESS` -> durable answer saves -> `FINALIZED` scoring).
 
 ### Decisions not to re-open without a real issue
 
