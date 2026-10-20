@@ -24,9 +24,14 @@ if config.config_file_name is not None:
 # Set target metadata for 'autogenerate' support
 target_metadata = Base.metadata
 
-# Use migration database URL (examos_migrator) or fall back to application URL
-migration_url = str(settings.MIGRATION_DATABASE_URL or settings.DATABASE_URL)
-config.set_main_option("sqlalchemy.url", migration_url)
+# Use migration database URL (examos_migrator) or fall back to application URL,
+# unless explicitly provided via -x url=... or programmatically on config
+cmd_opts = context.get_x_argument(as_dictionary=True)
+if "url" in cmd_opts:
+    config.set_main_option("sqlalchemy.url", cmd_opts["url"])
+elif not config.get_main_option("sqlalchemy.url"):
+    migration_url = str(settings.MIGRATION_DATABASE_URL or settings.DATABASE_URL)
+    config.set_main_option("sqlalchemy.url", migration_url)
 
 
 def run_migrations_offline() -> None:

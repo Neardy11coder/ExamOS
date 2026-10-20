@@ -1,6 +1,6 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 0.3 · **Status:** Milestone 0 Complete  
+**Version:** 0.4 · **Status:** M1-AUTH-3 Complete — Frontend Authentication UI
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
@@ -23,12 +23,39 @@ Create local `.env` files from `.env.example`; never commit real values. Expecte
 
 ```dotenv
 APP_ENV=development
-APP_SECRET_KEY=replace-with-a-random-secret
-DATABASE_URL=postgresql+psycopg://exam_os:local_password@localhost:5432/examos
+APP_SECRET_KEY=PLACEHOLDER_GENERATE_RANDOM_SECRET_KEY
+
+# PostgreSQL Server & Roles
+POSTGRES_ADMIN_USER=examos_admin
+POSTGRES_ADMIN_PASSWORD=PLACEHOLDER_ADMIN_PASSWORD
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5433
+
+POSTGRES_MIGRATOR_USER=examos_migrator
+POSTGRES_MIGRATOR_PASSWORD=PLACEHOLDER_MIGRATOR_PASSWORD
+
+POSTGRES_APP_USER=examos_app
+POSTGRES_APP_PASSWORD=PLACEHOLDER_APP_PASSWORD
+
+POSTGRES_TEST_USER=examos_test_runner
+POSTGRES_TEST_PASSWORD=PLACEHOLDER_TEST_PASSWORD
+
+POSTGRES_PROVISIONER_USER=examos_provisioner
+POSTGRES_PROVISIONER_PASSWORD=PLACEHOLDER_PROVISIONER_PASSWORD
+
+# Authoritative Connection Strings
+DATABASE_URL=postgresql+psycopg://examos_app:PLACEHOLDER_APP_PASSWORD@127.0.0.1:5433/examos
+MIGRATION_DATABASE_URL=postgresql+psycopg://examos_migrator:PLACEHOLDER_MIGRATOR_PASSWORD@127.0.0.1:5433/examos
+TEST_DATABASE_URL=postgresql+psycopg://examos_test_runner:PLACEHOLDER_TEST_PASSWORD@127.0.0.1:5433/examos_test
+PROVISIONER_DATABASE_URL=postgresql+psycopg://examos_provisioner:PLACEHOLDER_PROVISIONER_PASSWORD@127.0.0.1:5433/examos
+
+# Frontend & Session
 FRONTEND_ORIGIN=http://localhost:5173
 AUTH_TOKEN_TTL_MINUTES=480
 COOKIE_SECURE=false
 CSRF_ENABLED=true
+
+# Domain Boundaries
 MAX_EXAM_DURATION_MINUTES=240
 MAX_QUESTIONS_PER_EXAM=100
 MAX_OPTIONS_PER_QUESTION=6
@@ -38,9 +65,13 @@ DBLAB_DEFAULT_REPETITIONS=5
 ML_MODEL_PATH=../ml/artifacts/topic_classifier.joblib
 ML_CONFIDENCE_THRESHOLD=0.55
 EXPIRED_ATTEMPT_SWEEP_SECONDS=60
+
+# Initial Faculty Bootstrap Credentials
+SEED_FACULTY_EMAIL=faculty@examos.local
+SEED_FACULTY_PASSWORD=PLACEHOLDER_FACULTY_PASSWORD
 ```
 
-These are illustrative development defaults, not secure production settings. Validate all settings at startup. Generate a strong random application secret locally. `COOKIE_SECURE=false` is only for local HTTP; HTTPS deployment must enable secure cookies.
+These are illustrative development defaults, not secure production settings. Validate all settings at startup. Generate a strong random application secret locally. `COOKIE_SECURE=false` is only for local HTTP; HTTPS deployment must enable secure cookies. Dedicated least-privilege roles (`examos_migrator`, `examos_app`, `examos_test_runner`, `examos_provisioner`) are enforced across their respective workflows.
 
 ## 3. Local startup sequence
 
@@ -151,41 +182,53 @@ Update this section at the end of each development session or before switching c
 
 ### Current status
 
-- **Last updated:** 2026-10-16
-- **Current milestone:** Milestone 1A — Authentication (M1-AUTH-1 completed)
-- **Last known good commit:** 4e6cedb — chore: ignore generated TypeScript build info
-- **Working features:**
-  - PostgreSQL 16 container `examos-dev-20261016-db-1` healthy on `127.0.0.1:5433`
-  - Alembic migration `2efc4c54e793` (`users` table) applied to both `examos` and `examos_test`
-  - `/api/v1/health` returns 200 with `database: connected`
-  - `POST /api/v1/auth/register` (forces `STUDENT` role, enforces duplicate email 409, validates inputs)
-  - `POST /api/v1/auth/login` (sets HttpOnly JWT cookie `examos_access` + JS-readable CSRF cookie `examos_csrf`, returns generic 401 on invalid/deactivated credentials)
-  - `POST /api/v1/auth/logout` (clears cookies, requires valid JWT + CSRF header `X-CSRF-Token`)
-  - `GET /api/v1/auth/me` (returns authenticated user profile; requires valid JWT cookie)
-  - Password hashing via bcrypt (`passlib[bcrypt]`), JWT via HS256 (`PyJWT`), CSRF via 32-byte hex tokens
-  - Role guard dependencies (`require_student`, `require_faculty`)
-  - Frontend TypeScript compiles and production build succeeds
-  - Dedicated least-privilege `examos_provisioner` role and idempotent faculty bootstrap command (`python -m app.commands.bootstrap_faculty`)
-- **Failing tests / known bugs:** None. All 49 backend tests passing.
+- **Last updated:** 2026-10-21
+- **Current milestone:** Milestone 1 — Core Examination Database Schema (M1-SCHEMA-1 completed)
+- **Last known good commit:** 8fc1dab — fix(auth): scope local email validation to development
+- **Uncommitted local changes (untracked / modified):**
+  - Infrastructure & Config: `.gitattributes`, `database/init-db.sh`, `docker-compose.yml`, `.env.example`, `backend/alembic/env.py`
+  - Migrations: `backend/alembic/versions/20261020_0cb900c103a1_grant_provisioner_users_permissions.py`, `backend/alembic/versions/20261021_e4a1f8b2c9d0_create_core_examination_schema.py`
+  - ORM Models: `backend/app/models/topic.py`, `backend/app/models/question.py`, `backend/app/models/exam.py`, `backend/app/models/__init__.py`
+  - Tests: `backend/tests/test_exam_schema.py`
+  - Frontend auth & components: `frontend/package.json`, `frontend/package-lock.json`, `frontend/index.html`, `frontend/src/App.tsx`, `frontend/src/main.tsx`, `frontend/src/styles/index.css`, `frontend/src/api/auth.ts`, `frontend/src/components/`, `frontend/src/contexts/`, `frontend/src/pages/`
+- **Implemented and verified in M1-SCHEMA-1:**
+  - Alembic migration `e4a1f8b2c9d0` created from parent `0cb900c103a1`
+  - Core examination and question schema created per `docs/03_DATABASE_DESIGN.md` §§3.2–3.7:
+    - `topics`: UUID PK, unique code and name, subject check ('OS', 'DBMS'), is_active, timestamptz audit columns.
+    - `questions`: UUID PK, author_id FK (`users.id` RESTRICT), topic_id nullable FK (`topics.id` SET NULL), non-empty prompt check, archived_at timestamptz.
+    - `question_options`: UUID PK, question_id FK (`questions.id` RESTRICT), non-empty option_text, display_order >= 1, is_correct, unique `(question_id, display_order)`, partial unique index ensuring at most one correct option.
+    - `exams`: UUID PK, creator_id FK (`users.id` RESTRICT), title non-empty, duration_minutes > 0, status check ('DRAFT', 'PUBLISHED', 'UNPUBLISHED'), published_at, audit columns.
+    - `exam_questions`: UUID PK, exam_id FK (`exams.id` RESTRICT), source_question_id FK (`questions.id` RESTRICT), prompt_snapshot, topic_code_snapshot, topic_name_snapshot, marks numeric > 0, display_order >= 1, unique `(exam_id, display_order)`, unique `(id, exam_id)`.
+    - `exam_question_options`: UUID PK, exam_question_id FK (`exam_questions.id` RESTRICT), option_text_snapshot, display_order >= 1, is_correct, unique `(exam_question_id, display_order)`, unique `(exam_question_id, id)`, partial unique index ensuring at most one correct option.
+  - Snapshot immutability: verified that publication snapshot tables preserve frozen question prompts, options, marks, and topic labels independently from subsequent authoring bank modifications.
+  - Migration verification: verified fresh install migration on disposable container (base -> head and downgrade head -> base), development database (`examos`) at `e4a1f8b2c9d0 (head)`, and test database (`examos_test`) at `e4a1f8b2c9d0 (head)`.
+  - All 111 backend tests passing (`pytest backend/tests/ -q`) with 0 failures (93 pre-existing + 18 new schema and constraint tests).
+  - Frontend TypeScript check (`tsc -b`) passing with 0 errors.
+  - Frontend production build (`npm run build`) passing with 0 errors and 0 warnings.
+- **Implemented but not verified end to end in browser:**
+  - Full browser-driven UI interactive flows (`/login`, `/register`, `/dashboard`, session persistence on reload, public-only route redirects, in-browser logout). Playwright browser binaries cannot be downloaded in this sandboxed environment (`404 Not Found` from Azure CDN). Requires manual browser verification.
+- **Test status:** 111 backend tests passed, 16 warnings (Starlette TestClient deprecation warning, transaction rollback warnings); `tsc -b` 0 errors; `npm run build` exit 0 (0 warnings).
 
 ### Commands verified
 
 | Command | Environment | Result | Date |
 |---|---|---|---|
-| `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container `examos-dev-20261016-db-1` healthy on `127.0.0.1:5433` | 2026-10-16 |
-| `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages including `email-validator==2.3.0` installed | 2026-10-16 |
-| `pytest backend\tests\test_auth.py -v` | Python 3.11.9, venv | 37 passed against `examos_test` | 2026-10-16 |
-| `pytest backend\tests\test_faculty_provisioning.py -v` | Python 3.11.9, venv | 10 passed against `examos_test` | 2026-10-16 |
-| `pytest backend\tests\ -v` | Python 3.11.9, venv | 49 passed (37 auth + 10 faculty provisioning + 2 health) | 2026-10-16 |
-| `alembic upgrade head` (from `backend/`) | Python 3.11.9, venv | Applied revision `2efc4c54e793` to `examos` and `examos_test` | 2026-10-16 |
-| `python -m app.commands.bootstrap_faculty` | Python 3.11.9, venv | Provisioned initial `FACULTY_ADMIN` account; idempotent `EXISTS` on rerun | 2026-10-16 |
-| `npm run build` (from `frontend/`) | Node.js LTS, Vite | Production build succeeded (`tsc -b && vite build`) | 2026-10-16 |
+| `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container healthy on `127.0.0.1:5433` | 2026-10-16 |
+| `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages installed | 2026-10-16 |
+| `pytest backend\tests\ -q` | Python 3.11.9, venv | 111 passed, 16 warnings | 2026-10-21 |
+| `alembic current` (from `backend/`) | Python 3.11.9, venv | `e4a1f8b2c9d0 (head)` verified on dev database `examos` | 2026-10-21 |
+| `SELECT version_num FROM alembic_version` | PostgreSQL (`examos_test`) | `e4a1f8b2c9d0` verified on test database `examos_test` | 2026-10-21 |
+| Fresh DB migration upgrade & downgrade | PostgreSQL 16 container | Base -> Head -> Base verified cleanly | 2026-10-21 |
+| `python -m app.commands.bootstrap_faculty` | Python 3.11.9, venv | Provisioned `FACULTY_ADMIN`; idempotent | 2026-10-16 |
+| `npx tsc -b` (from `frontend/`) | Node.js LTS | 0 errors | 2026-10-20 |
+| `npm run build` (from `frontend/`) | Node.js LTS, Vite | Exit 0; 0 warnings, 0 errors | 2026-10-21 |
+| `git diff --check` | Git on Windows | Exit 0 | 2026-10-21 |
 
 ### Next three tasks
 
-1. **M1-SCHEMA-1**: Create Alembic migration for `topics`, `examinations`, `questions`, `options` tables; implement faculty question-bank CRUD endpoints per `docs/04_API_CONTRACT.md`.
-2. **M1-EXAM-1**: Exam authoring & publishing workflow with immutable snapshot upon publication.
-3. **M1-ATTEMPT-1**: Exam attempt lifecycle (`START` -> `IN_PROGRESS` -> durable answer saves -> `FINALIZED` scoring).
+1. **M1-EXAM-1**: Faculty question-bank CRUD endpoints (`/questions`) and exam authoring/publish/unpublish workflow with atomic immutable snapshot creation per `docs/04_API_CONTRACT.md`.
+2. **M1-ATTEMPT-1**: Student exam attempt lifecycle (`IN_PROGRESS` → durable answer saves → deadline enforcement → `SUBMITTED`/`EXPIRED` finalization).
+3. **M1-STUD-UI-1**: Student exam taking UI (catalogue, start attempt, question selection, mark for review, timer, submit, results).
 
 ### Decisions not to re-open without a real issue
 
