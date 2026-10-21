@@ -77,16 +77,21 @@ def run_bootstrap(
     target_display_name = display_name or "Faculty Administrator"
 
     engine = get_provisioner_engine(effective_url)
-    SessionMaker = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+    try:
+        SessionMaker = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
-    with SessionMaker() as session:
-        status, user = provision_faculty_account(
-            db=session,
-            email=target_email,
-            password=target_password,
-            display_name=target_display_name,
-        )
-        return status, user
+        with SessionMaker() as session:
+            status, user = provision_faculty_account(
+                db=session,
+                email=target_email,
+                password=target_password,
+                display_name=target_display_name,
+            )
+            session.expunge(user)
+            return status, user
+    finally:
+        engine.dispose()
+
 
 
 def main(argv: Sequence[str] | None = None) -> int:

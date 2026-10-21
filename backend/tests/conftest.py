@@ -3,7 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine, make_url
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
@@ -64,15 +64,21 @@ def test_db_session(test_db_engine: Engine) -> Generator[Session, None, None]:
     """
     Provides a transactional session on the test database.
     Rolls back any changes upon test completion.
+
+    Uses join_transaction_mode="create_savepoint" so that service-layer
+    calls to db.commit() are demoted to SAVEPOINT/RELEASE SAVEPOINT operations
+    rather than committing the outer connection-level transaction.  The outer
+    transaction.rollback() at teardown therefore cleanly undoes every insert,
+    update, and delete made during the test, preventing inter-test data leakage.
     """
     connection = test_db_engine.connect()
     transaction = connection.begin()
-    TestSessionLocal = sessionmaker(
+    session = Session(
         bind=connection,
         autocommit=False,
         autoflush=False,
+        join_transaction_mode="create_savepoint",
     )
-    session = TestSessionLocal()
 
     yield session
 

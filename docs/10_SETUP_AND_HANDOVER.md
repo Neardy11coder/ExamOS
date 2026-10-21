@@ -182,32 +182,99 @@ Update this section at the end of each development session or before switching c
 
 ### Current status
 
-- **Last updated:** 2026-10-21
-- **Current milestone:** Milestone 1 — Core Examination Database Schema (M1-SCHEMA-1 completed)
-- **Last known good commit:** 8fc1dab — fix(auth): scope local email validation to development
-- **Uncommitted local changes (untracked / modified):**
-  - Infrastructure & Config: `.gitattributes`, `database/init-db.sh`, `docker-compose.yml`, `.env.example`, `backend/alembic/env.py`
-  - Migrations: `backend/alembic/versions/20261020_0cb900c103a1_grant_provisioner_users_permissions.py`, `backend/alembic/versions/20261021_e4a1f8b2c9d0_create_core_examination_schema.py`
-  - ORM Models: `backend/app/models/topic.py`, `backend/app/models/question.py`, `backend/app/models/exam.py`, `backend/app/models/__init__.py`
-  - Tests: `backend/tests/test_exam_schema.py`
-  - Frontend auth & components: `frontend/package.json`, `frontend/package-lock.json`, `frontend/index.html`, `frontend/src/App.tsx`, `frontend/src/main.tsx`, `frontend/src/styles/index.css`, `frontend/src/api/auth.ts`, `frontend/src/components/`, `frontend/src/contexts/`, `frontend/src/pages/`
-- **Implemented and verified in M1-SCHEMA-1:**
-  - Alembic migration `e4a1f8b2c9d0` created from parent `0cb900c103a1`
-  - Core examination and question schema created per `docs/03_DATABASE_DESIGN.md` §§3.2–3.7:
-    - `topics`: UUID PK, unique code and name, subject check ('OS', 'DBMS'), is_active, timestamptz audit columns.
-    - `questions`: UUID PK, author_id FK (`users.id` RESTRICT), topic_id nullable FK (`topics.id` SET NULL), non-empty prompt check, archived_at timestamptz.
-    - `question_options`: UUID PK, question_id FK (`questions.id` RESTRICT), non-empty option_text, display_order >= 1, is_correct, unique `(question_id, display_order)`, partial unique index ensuring at most one correct option.
-    - `exams`: UUID PK, creator_id FK (`users.id` RESTRICT), title non-empty, duration_minutes > 0, status check ('DRAFT', 'PUBLISHED', 'UNPUBLISHED'), published_at, audit columns.
-    - `exam_questions`: UUID PK, exam_id FK (`exams.id` RESTRICT), source_question_id FK (`questions.id` RESTRICT), prompt_snapshot, topic_code_snapshot, topic_name_snapshot, marks numeric > 0, display_order >= 1, unique `(exam_id, display_order)`, unique `(id, exam_id)`.
-    - `exam_question_options`: UUID PK, exam_question_id FK (`exam_questions.id` RESTRICT), option_text_snapshot, display_order >= 1, is_correct, unique `(exam_question_id, display_order)`, unique `(exam_question_id, id)`, partial unique index ensuring at most one correct option.
-  - Snapshot immutability: verified that publication snapshot tables preserve frozen question prompts, options, marks, and topic labels independently from subsequent authoring bank modifications.
-  - Migration verification: verified fresh install migration on disposable container (base -> head and downgrade head -> base), development database (`examos`) at `e4a1f8b2c9d0 (head)`, and test database (`examos_test`) at `e4a1f8b2c9d0 (head)`.
-  - All 111 backend tests passing (`pytest backend/tests/ -q`) with 0 failures (93 pre-existing + 18 new schema and constraint tests).
-  - Frontend TypeScript check (`tsc -b`) passing with 0 errors.
-  - Frontend production build (`npm run build`) passing with 0 errors and 0 warnings.
-- **Implemented but not verified end to end in browser:**
-  - Full browser-driven UI interactive flows (`/login`, `/register`, `/dashboard`, session persistence on reload, public-only route redirects, in-browser logout). Playwright browser binaries cannot be downloaded in this sandboxed environment (`404 Not Found` from Azure CDN). Requires manual browser verification.
-- **Test status:** 111 backend tests passed, 16 warnings (Starlette TestClient deprecation warning, transaction rollback warnings); `tsc -b` 0 errors; `npm run build` exit 0 (0 warnings).
+- **Last updated:** 2026-10-21 (post quality-review pass)
+- **Current milestone:** M1-EXAM-1 complete — question bank, exam authoring, atomic publishing, and quality review.
+- **M1-EXAM-1 starting commit (HEAD at start of work):** `1bc774f` — `feat(schema): implement M1-SCHEMA-1 core examination database schema and constraints`
+  > The prior handover report incorrectly stated `8fc1dab` as the M1-EXAM-1 baseline. Verified via `git log`: the actual HEAD when M1-EXAM-1 work began was `1bc774f`, which is also `origin/main`. `8fc1dab` is two commits below HEAD.
+- **Current HEAD:** `1bc774f` (same as `origin/main`). All M1-EXAM-1 work is **uncommitted** in the local working tree for human review.
+- **Branch:** `main`, tracking `origin/main`.
+
+### Uncommitted local changes (all M1-EXAM-1 work)
+
+**Modified tracked files:**
+- `backend/app/api/v1/api.py` — mounted `topics`, `questions`, `exams` routers.
+- `backend/app/commands/bootstrap_faculty.py` — quality-review fix: deterministic `engine.dispose()` in `run_bootstrap` preventing psycopg connection leaks.
+- `backend/app/main.py` — added `custom_http_exception_handler` for standard error envelope.
+- `backend/app/schemas/__init__.py` — exported new schema models.
+- `backend/tests/conftest.py` — quality-review fix: `join_transaction_mode="create_savepoint"`.
+- `docs/10_SETUP_AND_HANDOVER.md` — this document.
+
+**Untracked new files:**
+- `backend/app/schemas/topic.py`, `question.py`, `exam.py`
+- `backend/app/services/topic_service.py`, `question_service.py`, `exam_service.py`
+- `backend/app/commands/seed_topics.py`
+- `backend/app/api/v1/endpoints/topics.py`, `questions.py`, `exams.py`
+- `backend/tests/helpers.py`, `test_topics.py`, `test_question_bank.py`, `test_exam_authoring.py`, `test_exam_publishing.py`
+
+### Implemented and verified in M1-EXAM-1
+
+**Topic taxonomy seeding:**
+- 8 authoritative taxonomy topics via `app.services.topic_service.seed_taxonomy_topics` and CLI `python -m app.commands.seed_topics`: `OS_PROCESS`, `OS_SCHEDULING`, `OS_SYNC`, `OS_MEMORY_FILES`, `DB_NORMALIZATION`, `DB_SQL_JOINS`, `DB_TRANSACTIONS`, `DB_INDEXING`.
+- Seed is fully idempotent. `GET /api/v1/topics` implemented and verified.
+
+**Faculty question-bank CRUD APIs (`/api/v1/questions`):**
+- `GET /questions`: lists/filters active questions by topic UUID or search keyword; supports `include_archived=true`.
+- `POST /questions`: creates MCQ question with 2-6 non-empty options and exactly one correct option.
+- `GET /questions/{id}`: returns detailed question data including correct-option designation.
+- `PATCH /questions/{id}`: updates prompt, topic, or replacement options; enforces author ownership.
+- `POST /questions/{id}/archive`: soft-archives questions (`archived_at` set).
+
+**Draft examination authoring (`/api/v1/exams`):**
+- `GET /exams`, `POST /exams`, `GET /exams/{id}`, `PATCH /exams/{id}`
+- `POST /exams/{id}/questions`: attach with marks and display order.
+- `PUT /exams/{id}/questions`: bulk replace/reorder.
+- `DELETE /exams/{id}/questions/{qid}`: remove from draft.
+
+**Atomic publishing and immutable snapshots:**
+- `POST /exams/{id}/publish`: row-locked (`SELECT ... FOR UPDATE`), wrapped in `begin_nested()` savepoint. Validates title, duration, question count >= 1, non-archived source questions, 2-6 options per question, exactly one correct option, non-empty option text. Creates frozen `exam_questions` and `exam_question_options` rows. Transitions status to `PUBLISHED`.
+- Repeated publish is idempotent; returns existing published state without duplicating snapshots.
+- Rollback guarantee: savepoint rollback on any failure leaves no partial snapshot rows.
+- Immutability: subsequent question-bank edits do not mutate published snapshot rows. **Enforcement layer: application-level only.** Service functions read exclusively from snapshot tables for published exams. The database does not have a write-blocking trigger on snapshot tables; immutability depends on application code not issuing snapshot mutations post-publish.
+- `POST /exams/{id}/unpublish`: transitions to `UNPUBLISHED` without deleting snapshots.
+
+**Security, authorization, and CSRF:**
+- `FACULTY_ADMIN` role guard on all question-bank and exam endpoints.
+- Creator/author ownership on all mutating operations.
+- CSRF token double-submit on all state-changing endpoints (`POST`, `PATCH`, `PUT`, `DELETE`).
+- Unauthenticated -> 401, student -> 403, wrong owner -> 403.
+
+### Quality review fixes applied (2026-10-21)
+
+**A. SAWarning: "transaction already deassociated from connection"**
+- **Root cause:** `conftest.py` acquired a connection-level transaction for test isolation, then service functions called `db.commit()`. In SQLAlchemy 2.x, `session.commit()` commits the connection's underlying transaction and starts a new autobegin. The outer `transaction` handle became deassociated, causing the warning and preventing clean rollback at teardown.
+- **Fix:** `conftest.py` now constructs `Session(bind=connection, join_transaction_mode="create_savepoint")`. Every `session.commit()` in service code is demoted to `SAVEPOINT`/`RELEASE SAVEPOINT`. The outer `transaction.rollback()` at teardown cleanly undoes all changes. Removed unused `sessionmaker` import.
+- **File changed:** `backend/tests/conftest.py`
+
+**B. DeprecationWarning: "Setting per-request cookies=<...> is being deprecated" (httpx 0.27)**
+- **Root cause:** `helpers.py` returned a `cookies` dict that tests passed as `cookies=` to individual requests. httpx 0.27 deprecates per-request cookie arguments because cookie persistence is ambiguous.
+- **Fix:** `auth_cookies_and_headers` now encodes both the JWT and CSRF cookies into a `Cookie:` HTTP request header and returns `(None, headers)`. FastAPI/Starlette parses the `Cookie:` header identically to cookie-jar delivery per RFC 6265. All existing test call sites continue to work unchanged; `cookies=None` does not trigger the warning. CSRF header and auth enforcement are unaffected.
+- **File changed:** `backend/tests/helpers.py`
+
+**C. ResourceWarning: "connection deleted while still open" (psycopg)**
+- **Root cause:** CLI commands (`bootstrap_faculty` and `seed_topics`) created standalone SQLAlchemy engines without disposing them (`engine.dispose()`), leaving open connection pool sockets that were garbage collected non-deterministically during subsequent tests.
+- **Fix:** Added `finally: engine.dispose()` in both `run_bootstrap` (`bootstrap_faculty.py`) and `run_seed_topics` (`seed_topics.py`), and expunged the user instance before closing the bootstrap session.
+- **Files changed:** `backend/app/commands/bootstrap_faculty.py`, `backend/app/commands/seed_topics.py`
+
+### Remaining warnings (1 total, external)
+
+| Warning | Source | Disposition |
+|---|---|---|
+| `DeprecationWarning: anyio.abc.BlockingPortal alias is deprecated` | `starlette/testclient.py:40` (external) | Starlette 0.40.0 uses a deprecated anyio 4.x alias. Cannot fix without patching site-packages. Resolves when Starlette releases a compatible update. |
+
+### Test results (observed during quality review)
+
+| Suite | Tests | Warnings (before fixes) | Warnings (after fixes) | Status |
+|---|---|---|---|---|
+| All backend tests | 160 | 123 | 1 (external) | All passed |
+| Frontend TypeScript (`tsc -b`) | — | 0 errors | 0 errors | Exit 0 |
+| Frontend production build (`npm run build`) | — | 0 warnings | 0 warnings | Exit 0 |
+| `git diff --check` | — | Exit 0 | Exit 0 | No trailing whitespace errors |
+
+No changes have been staged, committed, pushed, reset, or discarded.
+
+### Unverified browser behavior
+
+Full browser-driven interactive flows (`/login`, `/register`, `/dashboard`, session persistence, route guards, logout) have not been exercised. Playwright browser binaries cannot be downloaded in this environment (`404 Not Found` from Azure CDN). Requires manual browser verification before declaring the authentication UI production-ready. This implementation is **not confirmed production-ready** on the basis of automated tests alone.
 
 ### Commands verified
 
@@ -215,20 +282,18 @@ Update this section at the end of each development session or before switching c
 |---|---|---|---|
 | `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container healthy on `127.0.0.1:5433` | 2026-10-16 |
 | `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages installed | 2026-10-16 |
-| `pytest backend\tests\ -q` | Python 3.11.9, venv | 111 passed, 16 warnings | 2026-10-21 |
-| `alembic current` (from `backend/`) | Python 3.11.9, venv | `e4a1f8b2c9d0 (head)` verified on dev database `examos` | 2026-10-21 |
-| `SELECT version_num FROM alembic_version` | PostgreSQL (`examos_test`) | `e4a1f8b2c9d0` verified on test database `examos_test` | 2026-10-21 |
-| Fresh DB migration upgrade & downgrade | PostgreSQL 16 container | Base -> Head -> Base verified cleanly | 2026-10-21 |
+| `pytest backend\tests\ -q` | Python 3.11.9, venv | **160 passed, 1 warning (external)** | 2026-10-21 |
+| `alembic current` (from `backend/`) | Python 3.11.9, venv | `e4a1f8b2c9d0 (head)` on dev database `examos` | 2026-10-21 |
+| `python -m app.commands.seed_topics --db-url ...` (from `backend/`) | Python 3.11.9, venv | Seeded 8 taxonomy topics; idempotent | 2026-10-21 |
 | `python -m app.commands.bootstrap_faculty` | Python 3.11.9, venv | Provisioned `FACULTY_ADMIN`; idempotent | 2026-10-16 |
-| `npx tsc -b` (from `frontend/`) | Node.js LTS | 0 errors | 2026-10-20 |
-| `npm run build` (from `frontend/`) | Node.js LTS, Vite | Exit 0; 0 warnings, 0 errors | 2026-10-21 |
-| `git diff --check` | Git on Windows | Exit 0 | 2026-10-21 |
+| `npm run build` (from `frontend/`) | Node.js LTS, Vite 5.4.21 | Exit 0; 0 errors, 0 warnings | 2026-10-21 |
+| `git diff --check` | Git on Windows | Exit 0 (LF->CRLF info warnings only) | 2026-10-21 |
 
 ### Next three tasks
 
-1. **M1-EXAM-1**: Faculty question-bank CRUD endpoints (`/questions`) and exam authoring/publish/unpublish workflow with atomic immutable snapshot creation per `docs/04_API_CONTRACT.md`.
-2. **M1-ATTEMPT-1**: Student exam attempt lifecycle (`IN_PROGRESS` → durable answer saves → deadline enforcement → `SUBMITTED`/`EXPIRED` finalization).
-3. **M1-STUD-UI-1**: Student exam taking UI (catalogue, start attempt, question selection, mark for review, timer, submit, results).
+1. **M1-ATTEMPT-1**: Student exam attempt lifecycle (`IN_PROGRESS` -> durable answer saves -> deadline enforcement -> `SUBMITTED`/`EXPIRED` finalization).
+2. **M1-STUD-UI-1**: Student exam-taking UI (catalogue, start attempt, question navigation, timer, submit, results).
+3. **M1-EXAM-UI-1**: Faculty exam authoring UI (question bank manager, draft builder, question selector/reorder, publish validation).
 
 ### Decisions not to re-open without a real issue
 
@@ -236,7 +301,7 @@ Update this section at the end of each development session or before switching c
 - PostgreSQL is required for critical transaction tests.
 - No persisted `CREATED` attempt state; explicit start creates `IN_PROGRESS` atomically.
 - Exclusive database-time deadline boundary.
-- Published exam snapshot is immutable.
+- Published exam snapshot immutability is enforced at application layer; no DB trigger required by current requirements.
 - One attempt ever per student/exam in v1.
 - Scheduler uses the documented non-preemptive priority/tie rules.
 - No arbitrary SQL and no external AI service.
@@ -247,4 +312,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after Milestone 0 completion (2026-10-16)
+**Document Status:** Active — Updated after M1-EXAM-1 quality review (2026-10-21)
