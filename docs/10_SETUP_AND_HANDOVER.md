@@ -1,6 +1,6 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 0.4 · **Status:** M1-AUTH-3 Complete — Frontend Authentication UI
+**Version:** 0.5 · **Status:** M1-ATTEMPT-1 Complete — Student Examination Lifecycle & Secure Attempt Engine
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
@@ -199,12 +199,44 @@ Update this section at the end of each development session or before switching c
 - `backend/tests/conftest.py` — quality-review fix: `join_transaction_mode="create_savepoint"`.
 - `docs/10_SETUP_AND_HANDOVER.md` — this document.
 
-**Untracked new files:**
-- `backend/app/schemas/topic.py`, `question.py`, `exam.py`
-- `backend/app/services/topic_service.py`, `question_service.py`, `exam_service.py`
-- `backend/app/commands/seed_topics.py`
-- `backend/app/api/v1/endpoints/topics.py`, `questions.py`, `exams.py`
-- `backend/tests/helpers.py`, `test_topics.py`, `test_question_bank.py`, `test_exam_authoring.py`, `test_exam_publishing.py`
+**New files added in M1-ATTEMPT-1:**
+- `backend/app/models/attempt.py`
+- `backend/alembic/versions/20261021_f5a2b3c4d5e6_create_attempt_and_answer_schema.py`
+- `backend/app/schemas/attempt.py`
+- `backend/app/services/attempt_service.py`
+- `backend/app/api/v1/endpoints/attempts.py`
+- `backend/tests/test_attempt_schema.py`
+- `backend/tests/test_attempt_lifecycle.py`
+
+### Implemented and verified in M1-ATTEMPT-1
+
+**Attempt Data Model & Alembic Migration (`f5a2b3c4d5e6`):**
+- `attempts` table: tracks student attempt lifecycle (`IN_PROGRESS`, `SUBMITTED`, `EXPIRED`).
+  - Columns: `id`, `student_id`, `exam_id`, `status`, `started_at`, `deadline_at`, `submitted_at`, `finalized_at`, `score`, `created_at`, `updated_at`.
+  - Check constraints: `ck_attempts_status` (allowed enum states), `ck_attempts_deadline_after_started` (`deadline_at > started_at`), `ck_attempts_paired_status_finalized` (consistency between terminal status and `finalized_at`/`score`).
+  - Unique constraint: `uq_attempts_student_exam` (`student_id`, `exam_id`) enforcing one attempt per student/exam in v1.
+- `attempt_answers` table: durable answer records.
+  - Columns: `id`, `attempt_id`, `exam_question_id`, `selected_option_id`, `revision`, `created_at`, `updated_at`.
+  - Composite foreign keys: (`exam_question_id`, `selected_option_id`) references `exam_question_options (exam_question_id, id)` with `ON DELETE SET NULL`, strictly preventing cross-question option selection at the database engine level.
+  - Unique constraint: `uq_attempt_answers_attempt_question` (`attempt_id`, `exam_question_id`).
+
+**Student Examination Lifecycle & Secure Engine APIs:**
+- `GET /api/v1/exams/available` (Student): lists published exams with duration, question count, total marks, and current student attempt status.
+- `POST /api/v1/exams/{exam_id}/attempts/start` (Student): starts attempt atomically or recovers existing active attempt idempotently. Pre-populates empty answer rows for all frozen questions. Sets deadline = server time + exam duration.
+- `GET /api/v1/attempts/{attempt_id}` (Student owner): returns full attempt workspace with questions and student answers. Performs lazy finalization if overdue (`now >= deadline_at`). Strictly omits `is_correct` flags on options while attempt is active (OD-04).
+- `PUT /api/v1/attempts/{attempt_id}/answers/{exam_question_id}` (Student owner): saves answer durably. Enforces optimistic revision locking (`expected_revision`), validates frozen question and option membership, enforces server-authoritative deadline boundary (`now < deadline_at`), and increments answer revision.
+- `POST /api/v1/attempts/{attempt_id}/submit` (Student owner): finalizes attempt atomically under row lock. Idempotent on repeated calls. Evaluates server-authoritative time against deadline (`now < deadline_at` -> `SUBMITTED`, `now >= deadline_at` -> `EXPIRED`). Computes score atomically from frozen option correctness keys.
+- `GET /api/v1/attempts/{attempt_id}/result` (Student owner or Faculty): returns finalized score and per-question breakdown. Discloses `is_correct` only after attempt is finalized (`SUBMITTED` or `EXPIRED`).
+- `GET /api/v1/exams/{exam_id}/attempts` (Faculty): lists all student attempts for a published exam, triggering lazy expiry on overdue attempts.
+
+**Security, Invariants & Concurrency Safety:**
+- Authenticated student identity is always resolved from HttpOnly JWT cookie; client-supplied IDs are never trusted.
+- CSRF validation enforced on all mutating attempt operations (`POST /attempts/start`, `PUT /answers`, `POST /submit`).
+- Cross-student access is strictly blocked (HTTP 403 / 404).
+- PostgreSQL server time (`clock_timestamp()`) is the sole authority for deadline decisions; client clocks cannot alter deadlines.
+- Deadlines use the exclusive boundary rule: requests are timely strictly when `decision_time < deadline_at`.
+- Optimistic revision control (`expected_revision`) detects concurrent save conflicts (HTTP 409 `REVISION_CONFLICT`).
+- Row locking (`SELECT ... FOR UPDATE` with `selectinload`) prevents race conditions between concurrent saves and submission.
 
 ### Implemented and verified in M1-EXAM-1
 
@@ -229,7 +261,7 @@ Update this section at the end of each development session or before switching c
 - `POST /exams/{id}/publish`: row-locked (`SELECT ... FOR UPDATE`), wrapped in `begin_nested()` savepoint. Validates title, duration, question count >= 1, non-archived source questions, 2-6 options per question, exactly one correct option, non-empty option text. Creates frozen `exam_questions` and `exam_question_options` rows. Transitions status to `PUBLISHED`.
 - Repeated publish is idempotent; returns existing published state without duplicating snapshots.
 - Rollback guarantee: savepoint rollback on any failure leaves no partial snapshot rows.
-- Immutability: subsequent question-bank edits do not mutate published snapshot rows. **Enforcement layer: application-level only.** Service functions read exclusively from snapshot tables for published exams. The database does not have a write-blocking trigger on snapshot tables; immutability depends on application code not issuing snapshot mutations post-publish.
+- Immutability: subsequent question-bank edits do not mutate published snapshot rows. **Enforcement layer: application-level only.** Service functions read exclusively from snapshot tables for published exams.
 - `POST /exams/{id}/unpublish`: transitions to `UNPUBLISHED` without deleting snapshots.
 
 **Security, authorization, and CSRF:**
@@ -238,37 +270,14 @@ Update this section at the end of each development session or before switching c
 - CSRF token double-submit on all state-changing endpoints (`POST`, `PATCH`, `PUT`, `DELETE`).
 - Unauthenticated -> 401, student -> 403, wrong owner -> 403.
 
-### Quality review fixes applied (2026-10-21)
+### Test results (observed 2026-10-21)
 
-**A. SAWarning: "transaction already deassociated from connection"**
-- **Root cause:** `conftest.py` acquired a connection-level transaction for test isolation, then service functions called `db.commit()`. In SQLAlchemy 2.x, `session.commit()` commits the connection's underlying transaction and starts a new autobegin. The outer `transaction` handle became deassociated, causing the warning and preventing clean rollback at teardown.
-- **Fix:** `conftest.py` now constructs `Session(bind=connection, join_transaction_mode="create_savepoint")`. Every `session.commit()` in service code is demoted to `SAVEPOINT`/`RELEASE SAVEPOINT`. The outer `transaction.rollback()` at teardown cleanly undoes all changes. Removed unused `sessionmaker` import.
-- **File changed:** `backend/tests/conftest.py`
-
-**B. DeprecationWarning: "Setting per-request cookies=<...> is being deprecated" (httpx 0.27)**
-- **Root cause:** `helpers.py` returned a `cookies` dict that tests passed as `cookies=` to individual requests. httpx 0.27 deprecates per-request cookie arguments because cookie persistence is ambiguous.
-- **Fix:** `auth_cookies_and_headers` now encodes both the JWT and CSRF cookies into a `Cookie:` HTTP request header and returns `(None, headers)`. FastAPI/Starlette parses the `Cookie:` header identically to cookie-jar delivery per RFC 6265. All existing test call sites continue to work unchanged; `cookies=None` does not trigger the warning. CSRF header and auth enforcement are unaffected.
-- **File changed:** `backend/tests/helpers.py`
-
-**C. ResourceWarning: "connection deleted while still open" (psycopg)**
-- **Root cause:** CLI commands (`bootstrap_faculty` and `seed_topics`) created standalone SQLAlchemy engines without disposing them (`engine.dispose()`), leaving open connection pool sockets that were garbage collected non-deterministically during subsequent tests.
-- **Fix:** Added `finally: engine.dispose()` in both `run_bootstrap` (`bootstrap_faculty.py`) and `run_seed_topics` (`seed_topics.py`), and expunged the user instance before closing the bootstrap session.
-- **Files changed:** `backend/app/commands/bootstrap_faculty.py`, `backend/app/commands/seed_topics.py`
-
-### Remaining warnings (1 total, external)
-
-| Warning | Source | Disposition |
-|---|---|---|
-| `DeprecationWarning: anyio.abc.BlockingPortal alias is deprecated` | `starlette/testclient.py:40` (external) | Starlette 0.40.0 uses a deprecated anyio 4.x alias. Cannot fix without patching site-packages. Resolves when Starlette releases a compatible update. |
-
-### Test results (observed during quality review)
-
-| Suite | Tests | Warnings (before fixes) | Warnings (after fixes) | Status |
-|---|---|---|---|---|
-| All backend tests | 160 | 123 | 1 (external) | All passed |
-| Frontend TypeScript (`tsc -b`) | — | 0 errors | 0 errors | Exit 0 |
-| Frontend production build (`npm run build`) | — | 0 warnings | 0 warnings | Exit 0 |
-| `git diff --check` | — | Exit 0 | Exit 0 | No trailing whitespace errors |
+| Suite | Tests | Warnings | Status |
+|---|---|---|---|
+| All backend tests (`pytest backend/tests/ -q`) | 189 | 1 (external Starlette deprecation) | All 189 passed |
+| Frontend TypeScript (`tsc -b`) | — | 0 errors | Exit 0 |
+| Frontend production build (`npm run build`) | — | 0 warnings | Exit 0 |
+| `git diff --check` | — | Exit 0 | No trailing whitespace errors |
 
 No changes have been staged, committed, pushed, reset, or discarded.
 
@@ -282,8 +291,8 @@ Full browser-driven interactive flows (`/login`, `/register`, `/dashboard`, sess
 |---|---|---|---|
 | `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container healthy on `127.0.0.1:5433` | 2026-10-16 |
 | `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages installed | 2026-10-16 |
-| `pytest backend\tests\ -q` | Python 3.11.9, venv | **160 passed, 1 warning (external)** | 2026-10-21 |
-| `alembic current` (from `backend/`) | Python 3.11.9, venv | `e4a1f8b2c9d0 (head)` on dev database `examos` | 2026-10-21 |
+| `pytest backend\tests\ -q` | Python 3.11.9, venv | **189 passed, 1 warning (external)** | 2026-10-21 |
+| `alembic current` (from `backend/`) | Python 3.11.9, venv | `f5a2b3c4d5e6 (head)` on dev database `examos` | 2026-10-21 |
 | `python -m app.commands.seed_topics --db-url ...` (from `backend/`) | Python 3.11.9, venv | Seeded 8 taxonomy topics; idempotent | 2026-10-21 |
 | `python -m app.commands.bootstrap_faculty` | Python 3.11.9, venv | Provisioned `FACULTY_ADMIN`; idempotent | 2026-10-16 |
 | `npm run build` (from `frontend/`) | Node.js LTS, Vite 5.4.21 | Exit 0; 0 errors, 0 warnings | 2026-10-21 |
@@ -291,18 +300,20 @@ Full browser-driven interactive flows (`/login`, `/register`, `/dashboard`, sess
 
 ### Next three tasks
 
-1. **M1-ATTEMPT-1**: Student exam attempt lifecycle (`IN_PROGRESS` -> durable answer saves -> deadline enforcement -> `SUBMITTED`/`EXPIRED` finalization).
-2. **M1-STUD-UI-1**: Student exam-taking UI (catalogue, start attempt, question navigation, timer, submit, results).
-3. **M1-EXAM-UI-1**: Faculty exam authoring UI (question bank manager, draft builder, question selector/reorder, publish validation).
+1. **M1-STUD-UI-1**: Student exam-taking UI (catalogue, start attempt, question navigation, timer, submit, results).
+2. **M1-EXAM-UI-1**: Faculty exam authoring UI (question bank manager, draft builder, question selector/reorder, publish validation).
+3. **M2-OS-1**: Educational OS scheduler simulation core (abstract jobs, FCFS, Round Robin, Priority, SJF metrics).
 
 ### Decisions not to re-open without a real issue
 
 - Modular monolith; no microservices.
 - PostgreSQL is required for critical transaction tests.
 - No persisted `CREATED` attempt state; explicit start creates `IN_PROGRESS` atomically.
-- Exclusive database-time deadline boundary.
+- Exclusive database-time deadline boundary (`now < deadline_at`).
 - Published exam snapshot immutability is enforced at application layer; no DB trigger required by current requirements.
 - One attempt ever per student/exam in v1.
+- Composite foreign keys on `attempt_answers` guarantee option belongs to referenced question.
+- Lazy finalization on attempt recovery / retrieval guarantees eventual consistency without background workers.
 - Scheduler uses the documented non-preemptive priority/tie rules.
 - No arbitrary SQL and no external AI service.
 
@@ -312,4 +323,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M1-EXAM-1 quality review (2026-10-21)
+**Document Status:** Active — Updated after M1-ATTEMPT-1 completion (2026-10-21)

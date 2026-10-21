@@ -26,6 +26,22 @@ from app.schemas.question import (
     QuestionRead,
     QuestionUpdate,
 )
+from app.schemas.attempt import (
+    AnswerSaveRequest,
+    AnswerSaveResponse,
+    AttemptDetailRead,
+    AttemptExamInfo,
+    AttemptResultResponse,
+    AvailableExamItem,
+    FacultyAttemptListItem,
+    ResultOptionRead,
+    ResultQuestionItem,
+    StudentAnswerState,
+    StudentOptionRead,
+    StudentQuestionRead,
+    SubmitAttemptRequest,
+    SubmitAttemptResponse,
+)
 from app.schemas.topic import TopicCreate, TopicRead
 
 __all__ = [
@@ -53,4 +69,18 @@ __all__ = [
     "ExamQuestionOptionSnapshotRead",
     "ExamPublishResponse",
     "ExamUnpublishResponse",
+    "AvailableExamItem",
+    "StudentOptionRead",
+    "StudentAnswerState",
+    "StudentQuestionRead",
+    "AttemptExamInfo",
+    "AttemptDetailRead",
+    "AnswerSaveRequest",
+    "AnswerSaveResponse",
+    "SubmitAttemptRequest",
+    "SubmitAttemptResponse",
+    "ResultOptionRead",
+    "ResultQuestionItem",
+    "AttemptResultResponse",
+    "FacultyAttemptListItem",
 ]

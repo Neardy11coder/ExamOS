@@ -14,10 +14,15 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.deps import require_faculty, validate_csrf
+from app.core.deps import require_faculty, require_student, validate_csrf
 from app.db.session import get_db
 from app.models.exam import Exam
 from app.models.user import User
+from app.schemas.attempt import (
+    AttemptDetailRead,
+    AvailableExamItem,
+    FacultyAttemptListItem,
+)
 from app.schemas.exam import (
     ExamCreate,
     ExamDetailRead,
@@ -42,6 +47,12 @@ from app.services.exam_service import (
     set_draft_questions,
     unpublish_exam,
     update_draft_exam,
+)
+from app.services.attempt_service import (
+    AttemptServiceError,
+    list_available_exams,
+    list_exam_attempts,
+    start_attempt,
 )
 
 router = APIRouter(prefix="/exams", tags=["exams"])
@@ -156,6 +167,24 @@ def get_exams_list(
     """
     exams = list_exams(db)
     return [_serialize_exam_summary(e) for e in exams]
+
+
+@router.get(
+    "/available",
+    response_model=list[AvailableExamItem],
+    summary="List published examinations available to the student",
+)
+def get_available_exams(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(require_student)],
+) -> list[AvailableExamItem]:
+    """
+    Lists published exams available to the student.
+    Returns duration, total marks, and whether the student already has an attempt.
+    Never returns correct options or unfinalized answers.
+    Requires role STUDENT.
+    """
+    return list_available_exams(db, student_id=current_user.id)
 
 
 @router.post(
@@ -445,4 +474,61 @@ def post_unpublish_exam(
         raise HTTPException(
             status_code=exc.status_code,
             detail={"error": {"code": exc.code, "message": exc.message}},
+        )
+
+
+@router.post(
+    "/{exam_id}/attempts/start",
+    response_model=AttemptDetailRead,
+    dependencies=[Depends(validate_csrf)],
+    summary="Start an examination attempt",
+)
+def start_exam_attempt_endpoint(
+    exam_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(require_student)],
+) -> AttemptDetailRead:
+    """
+    Starts an examination attempt.
+    Idempotent: returns existing attempt if student already has one.
+    Creates IN_PROGRESS state and pre-populates answer rows atomically.
+    Requires role STUDENT and CSRF protection.
+    """
+    try:
+        return start_attempt(
+            db,
+            exam_id=exam_id,
+            student_id=current_user.id,
+        )
+    except AttemptServiceError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"error": {"code": exc.code, "message": exc.message, "details": exc.details}},
+        )
+
+
+@router.get(
+    "/{exam_id}/attempts",
+    response_model=list[FacultyAttemptListItem],
+    summary="List student attempts for an examination",
+)
+def get_exam_attempts_endpoint(
+    exam_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(require_faculty)],
+) -> list[FacultyAttemptListItem]:
+    """
+    Returns list of all attempts for an exam for faculty.
+    Runs lazy expiry on overdue attempts before returning.
+    Requires role FACULTY_ADMIN.
+    """
+    try:
+        return list_exam_attempts(
+            db,
+            exam_id=exam_id,
+        )
+    except AttemptServiceError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"error": {"code": exc.code, "message": exc.message, "details": exc.details}},
         )
