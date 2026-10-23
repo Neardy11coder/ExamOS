@@ -1,9 +1,10 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 1.2 · **Status:** M6-DEMO-PREP Complete — PBL Demonstration & Viva Readiness
+**Version:** 1.3 · **Status:** M7-PROJECT-WRAPUP Complete — Final Repository Audit and Submission Readiness
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
+
 
 ## 1. Prerequisites
 
@@ -480,9 +481,18 @@ Completed live demonstration preparation and comprehensive viva material:
 3. **Demo Script Validation**: Updated [`docs/11_DEMO_AND_VIVA.md`](./11_DEMO_AND_VIVA.md) referencing the detailed live runbook.
 4. **Verification**: Pre-demo checklist validated; full backend test suite passes (271 passed); frontend production build clean. Manual browser rehearsal completed (2026-10-24) confirming: ML LOW_CONFIDENCE fallback and manual topic selection on `/faculty/questions`; exam publication on `/faculty/exams`; student attempt with autosave, submission, and 100% result on `/attempts/{id}/result`; FCFS/SJF/RR/Priority Gantt charts on `/faculty/os-scheduler`; Database Lab medium-scale (1,000 students) benchmark comparison on `/faculty/database-lab`.
 
+### Milestone 7 — Project Wrap-up & Submission Readiness (M7-PROJECT-WRAPUP)
+
+Completed repository-wide final audit and evaluator onboarding hardening:
+1. **Repository & README Overhaul**: Rewrote [`README.md`](../README.md) to serve as a comprehensive entry point for evaluators and viva panelists: complete project overview, technology architecture, one-command setup sequences, demo credentials, verified test records, major routes, and full documentation index.
+2. **Automated Verification**: Re-executed and confirmed the complete test suite against local PostgreSQL: **271 passed**, 0 failed in 39.67s; frontend production build cleanly bundled via Vite in 1.69s; `git diff --check` clean.
+3. **Reproducibility Audit**: Verified that `python -m ml.train` and `python -m ml.evaluate` cleanly regenerate the git-ignored `ml/artifacts/topic_classifier.joblib` artifact from curated datasets; verified that CLI seed scripts (`seed_topics`, `seed_lab_dataset`, `bootstrap_faculty`) execute cleanly and idempotently.
+4. **Security & Invariant Audit**: Verified that `.env` and sensitive credentials remain excluded from Git tracking; least-privilege PostgreSQL roles, answer key confidentiality, exclusive deadline enforcement, and isolated `examos_lab` schema boundaries remain intact.
+5. **Submission Readiness**: Confirmed that all roadmap milestones (M0–M7) are complete, documented, tested, and ready for evaluator inspection and defense.
+
 ### Next task
 
-1. **M7-PROJECT-WRAPUP**: Final code freeze, repository tagging, and presentation rehearsal.
+1. **Repository Tagging & Final Release**: Tag `v1.0.0` or `submission-ready` on `main` branch.
 
 ### Decisions not to re-open without a real issue
 
@@ -503,4 +513,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M6-DEMO-PREP completion (2026-10-24, manual browser rehearsal complete)
+**Document Status:** Complete — Updated after M7-PROJECT-WRAPUP completion (2026-10-24, all milestones verified)
