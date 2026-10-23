@@ -1,0 +1,208 @@
+{
+  "evaluated_at": "2026-10-23T15:54:00.816696+00:00",
+  "model_file": "topic_classifier.joblib",
+  "split_seed": 42,
+  "test_size": 0.2,
+  "dataset_total_samples": 160,
+  "train_samples": 128,
+  "test_samples": 32,
+  "overall_metrics": {
+    "accuracy": 0.6875,
+    "macro_f1": 0.6496,
+    "weighted_f1": 0.6496
+  },
+  "per_topic_metrics": {
+    "OS_PROCESS": {
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1_score": 0.8889,
+      "test_support": 4
+    },
+    "OS_SCHEDULING": {
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1_score": 0.8889,
+      "test_support": 4
+    },
+    "OS_SYNC": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "test_support": 4
+    },
+    "OS_MEMORY_FILES": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1_score": 0.8571,
+      "test_support": 4
+    },
+    "DB_NORMALIZATION": {
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1_score": 0.6667,
+      "test_support": 4
+    },
+    "DB_SQL_JOINS": {
+      "precision": 0.4286,
+      "recall": 0.75,
+      "f1_score": 0.5455,
+      "test_support": 4
+    },
+    "DB_TRANSACTIONS": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1_score": 0.75,
+      "test_support": 4
+    },
+    "DB_INDEXING": {
+      "precision": 0.5,
+      "recall": 0.75,
+      "f1_score": 0.6,
+      "test_support": 4
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "OS_PROCESS",
+      "OS_SCHEDULING",
+      "OS_SYNC",
+      "OS_MEMORY_FILES",
+      "DB_NORMALIZATION",
+      "DB_SQL_JOINS",
+      "DB_TRANSACTIONS",
+      "DB_INDEXING"
+    ],
+    "matrix": [
+      [
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        3
+      ]
+    ]
+  },
+  "metadata_info": {
+    "artifact_version": "1.0.0",
+    "trained_at": "2026-10-23T15:53:54.822217+00:00",
+    "taxonomy_classes": [
+      "OS_PROCESS",
+      "OS_SCHEDULING",
+      "OS_SYNC",
+      "OS_MEMORY_FILES",
+      "DB_NORMALIZATION",
+      "DB_SQL_JOINS",
+      "DB_TRANSACTIONS",
+      "DB_INDEXING"
+    ],
+    "model_classes": [
+      "DB_INDEXING",
+      "DB_NORMALIZATION",
+      "DB_SQL_JOINS",
+      "DB_TRANSACTIONS",
+      "OS_MEMORY_FILES",
+      "OS_PROCESS",
+      "OS_SCHEDULING",
+      "OS_SYNC"
+    ],
+    "dataset_total_samples": 160,
+    "train_samples": 128,
+    "test_samples": 32,
+    "split_seed": 42,
+    "test_size": 0.2,
+    "library_versions": {
+      "scikit_learn": "1.5.2",
+      "joblib": "1.6.0",
+      "python": "3.11.9"
+    },
+    "pipeline_parameters": {
+      "tfidf__ngram_range": [
+        1,
+        2
+      ],
+      "tfidf__sublinear_tf": true,
+      "classifier__C": 1.0,
+      "classifier__max_iter": 1000,
+      "classifier__solver": "lbfgs",
+      "classifier__random_state": 42
+    }
+  },
+  "limitations": [
+    "Dataset scale is a modest development baseline (160 samples, 20 per topic).",
+    "Near-boundary topics (e.g. DB_INDEXING vs DB_SQL_JOINS, or OS_PROCESS vs OS_SCHEDULING) may display semantic overlap on concise questions.",
+    "Model predictions are strictly advisory; faculty confirmation remains authoritative."
+  ]
+}

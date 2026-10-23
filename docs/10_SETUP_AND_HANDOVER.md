@@ -1,6 +1,6 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 0.8 · **Status:** M3-DB-1 Complete — Isolated Database Lab Foundation
+**Version:** 1.0 · **Status:** M4-ML-UI-1 Complete — Question Bank ML Topic Suggestion UI
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
@@ -261,9 +261,10 @@ Update this section at the end of each development session or before switching c
 
 | Suite | Tests | Warnings | Status |
 |---|---|---|---|
-| All backend tests (`pytest backend/tests/ -q`) | 189 | 1 (external Starlette deprecation) | 189 passed (when PostgreSQL docker service is running) |
+| All backend tests (`pytest backend/tests/ -v`) | 271 | 5 (external Starlette/httpx/scipy deprecations) | 271 passed in ~42s (when PostgreSQL docker service is running) |
+| Focused ML tests only (`pytest tests/test_ml_dataset.py tests/test_ml_topic_suggestions.py -v`) | 35 | 5 (external deprecations) | 35 passed in ~3s |
 | Frontend TypeScript (`tsc -b`) | — | 0 errors | Exit 0 |
-| Frontend production build (`npm run build`) | — | 0 warnings | Exit 0 (vite v5.4.21, dist 231 kB bundle) |
+| Frontend production build (`npm run build`) | — | 0 warnings | Exit 0 (vite v5.4.21, 1600 modules, dist ~326 kB bundle) |
 | `git diff --check` | — | Exit 0 | No trailing whitespace errors |
 
 No changes have been staged, committed, pushed, reset, or discarded.
@@ -356,11 +357,106 @@ Automated browser driver tests (e.g. Playwright / Selenium CI suites) remain **N
   - Added explicit PostgreSQL `ANALYZE` commands on all four lab tables at the conclusion of `seed_lab_dataset()` to guarantee immediate statistics availability for query plan costing.
   - Updated frontend `DatabaseLabPage.tsx` to display active database scale, row counts, and clear operator CLI instructions when target scale differs from database state.
 
-### Next three tasks
+### Milestone M4-ML-1: Local ML Topic Classification Service & Graceful Fallback ✅
 
-1. **M4-ML-1**: ML topic classification service & fallback.
-2. **M4-ML-UI-1**: ML suggestions display in question authoring.
-3. **M5-AUDIT-1**: End-to-end security, concurrency, and reliability audit.
+- **Requirements:** FR-ML-001–011, OD-06, docs/07_AI_ML_DESIGN.md §5, docs/04_API_CONTRACT.md §8
+- **Completed:** 2026-10-23
+
+#### ML package (`ml/`)
+
+- `ml/__init__.py` — canonical 8-code taxonomy list (`TAXONOMY_TOPIC_CODES`).
+- `ml/preprocessing.py` — `normalize_text()` / `combine_prompt_and_options()` — no answer-key fields.
+- `ml/dataset.py` — `load_dataset()` (validates all 8 classes, no empty rows, no duplicate normalized texts) + `get_stratified_split()` (deterministic, seed=42, 80/20, leakage-checked).
+- `ml/train.py` — TF-IDF (1-gram + 2-gram, sublinear_tf) + Logistic Regression (C=1.0, lbfgs, max_iter=1000). Saves `.joblib` artifact + metadata JSON. Run: `python -m ml.train` from project root.
+- `ml/evaluate.py` — Evaluates on deterministic held-out test split; writes `ml/reports/evaluation_report.json` and `ml/reports/evaluation_summary.md`. Run: `python -m ml.evaluate` from project root.
+- `ml/data/question_topics.csv` — 160 curated examples (20 per class × 8 topics). No student data. No answer keys.
+- `ml/artifacts/topic_classifier_metadata.json` — tracked (not ignored).
+- `ml/artifacts/topic_classifier.joblib` — **git-ignored** (regenerate with `ml.train`).
+- `ml/artifacts/.gitkeep`, `ml/reports/.gitkeep` — directory markers.
+
+#### Actual evaluation metrics (seed=42, 80/20 split, 128 train / 32 test)
+
+| Metric | Value |
+|---|---|
+| Overall Accuracy | **68.8%** |
+| Macro F1 | **0.6496** |
+| Weighted F1 | **0.6496** |
+
+| Topic | Precision | Recall | F1 | Test n |
+|---|---|---|---|---|
+| OS_PROCESS | 0.80 | 1.00 | 0.889 | 4 |
+| OS_SCHEDULING | 0.80 | 1.00 | 0.889 | 4 |
+| OS_SYNC | 0.00 | 0.00 | 0.000 | 4 |
+| OS_MEMORY_FILES | 1.00 | 0.75 | 0.857 | 4 |
+| DB_NORMALIZATION | 1.00 | 0.50 | 0.667 | 4 |
+| DB_SQL_JOINS | 0.43 | 0.75 | 0.545 | 4 |
+| DB_TRANSACTIONS | 0.75 | 0.75 | 0.750 | 4 |
+| DB_INDEXING | 0.50 | 0.75 | 0.600 | 4 |
+
+**Known limitations:**
+1. Dataset scale is a modest development baseline (160 samples, 20 per class). With only 4 test samples per class, per-topic metrics are highly variable.
+2. `OS_SYNC` scores F1=0.00 on this split — its 4 test examples were misclassified as OS_PROCESS, OS_SCHEDULING, DB_SQL_JOINS, and DB_INDEXING. This reflects the small test set; the classifier is advisory only.
+3. Conceptual overlap on cross-cutting terms (e.g. transactions vs SQL joins, sync vs process) degrades precision on similar-domain questions.
+4. The default threshold (0.55) is intentionally conservative to suppress false positives when faculty are authoring questions.
+5. Model predictions are strictly advisory. Faculty confirmation is authoritative.
+
+#### Backend integration
+
+- `backend/app/schemas/ml.py` — `TopicSuggestionRequest` (prompt max 5000 chars, options max 10 × 1000 chars, extra fields forbidden), `TopicSuggestionResponse`, `TopicSuggestionDetails`.
+- `backend/app/services/ml_service.py`:
+  - Lazy model load on first `suggest_topic()` call.
+  - `ML_MODEL_PATH` resolved relative to `backend/` directory regardless of process CWD. Default: `../ml/artifacts/topic_classifier.joblib` (resolves to `ml/artifacts/topic_classifier.joblib` under repo root).
+  - `ML_CONFIDENCE_THRESHOLD` validated `[0.0, 1.0]`; raises `ValueError` on misconfiguration.
+  - Incompatible-model guard: returns `MODEL_NOT_FOUND` if loaded model's classes don't cover the full 8-topic taxonomy.
+  - Reason codes: `MODEL_NOT_FOUND`, `MODEL_LOAD_FAILED`, `INFERENCE_FAILED`, `LOW_CONFIDENCE`. `MODEL_ERROR` retained as backward-compat alias.
+  - No exceptions surfaced to callers; no question content or paths logged.
+- `backend/app/api/v1/endpoints/ml.py` — `POST /api/v1/ml/topic-suggestions`: faculty-only (`require_faculty`), CSRF-protected (`validate_csrf`). Always returns HTTP 200. Never persists topic assignment.
+- `backend/app/api/v1/api.py` — Router registered.
+- `backend/requirements.txt` — `scikit-learn==1.5.2` added (Python 3.11 compatible).
+
+#### Tests
+
+- `backend/tests/test_ml_dataset.py` — 18 tests covering: all 8 classes present, 20+ samples/class, no duplicates, split disjointness, split determinism, train+evaluate round-trip, metadata fields.
+- `backend/tests/test_ml_topic_suggestions.py` — 17 tests covering: model-not-found, high-confidence suggestion, low-confidence, prediction exception, prompt-only input, relative path resolution independent of CWD, faculty-only auth, CSRF, input validation, response schema contracts, no artifact path leakage.
+- Full suite: **271 passed, 0 failed** (2026-10-24).
+
+#### ML commands (run from project root `C:\Projects\ExamOS`)
+
+```powershell
+# Verify environment
+& backend\.venv\Scripts\python.exe -c "import sklearn, joblib; print('sklearn', sklearn.__version__); print('joblib', joblib.__version__)"
+
+# Train (saves ml/artifacts/topic_classifier.joblib + metadata.json)
+& backend\.venv\Scripts\python.exe -m ml.train
+
+# Evaluate (reads held-out test split; writes ml/reports/)
+& backend\.venv\Scripts\python.exe -m ml.evaluate
+```
+
+> **Note:** The `.joblib` artifact is git-ignored. After a fresh clone, run `ml.train` before starting the backend server. The server starts normally without the artifact — topic suggestions will return `available=false, reason="MODEL_NOT_FOUND"` until the artifact is present.
+
+#### Frontend integration (M4-ML-UI-1)
+
+- `frontend/src/api/ml.ts` (109 lines):
+  - Typed API client for `POST /api/v1/ml/topic-suggestions`.
+  - Types: `TopicSuggestionRequest`, `TopicSuggestionDetails`, `TopicSuggestionAvailable`, `TopicSuggestionUnavailable`, `TopicSuggestionResponse`.
+  - Security & privacy invariant: never sends `is_correct` flags or answer keys; strips them to send only question prompt text and optional option texts.
+  - Passes `X-CSRF-Token` via `readCsrfCookie()`, credentials include.
+  - Treats non-200 responses as `ApiError`, ensuring non-blocking failure handling in UI.
+- `frontend/src/pages/QuestionBankPage.tsx`:
+  - **Explicit trigger:** Faculty clicks "Suggest Topic" button (`#suggest-topic-btn`). Disabled when prompt is empty or while request is in-flight.
+  - **Local prompt validation:** Rejects empty prompt with clear message before issuing any network call.
+  - **Suggestion panel:** Displays "Automatic Topic Suggestion" label with purple accent styling, topic name, topic code, confidence percentage, and model threshold.
+  - **Accept action:** "Use Suggestion" (`#use-suggestion-btn`) maps the returned `topic_code` to the corresponding UUID in the loaded `topics` list and updates `topicInput`. If the topic code is not found in the current active taxonomy, it displays a safe fallback error rather than misassigning.
+  - **Dismiss action:** "Dismiss" (`#dismiss-suggestion-btn`) clears displayed proposal without affecting the manual selector.
+  - **Manual override:** Faculty retains full control to change or clear the topic at any point via the standard dropdown selector.
+  - **Graceful degradation:** Displays friendly, non-blocking informational messages for `LOW_CONFIDENCE`, `MODEL_NOT_FOUND`, and `MODEL_LOAD_FAILED`. Suggestion errors do not block question creation or editing.
+  - **Staleness invalidation:** Edits to prompt or option texts invalidate visible suggestions; modal close/cancel and question switching reset all suggestion state.
+  - **Verification:** Verified via `npm run build` (0 TypeScript errors, 1600 modules transformed in ~1.65s).
+
+### Next task
+
+1. **M5-AUDIT-1**: End-to-end security, concurrency, and reliability audit.
 
 ### Decisions not to re-open without a real issue
 
@@ -381,4 +477,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M3-DB-UI-1 completion (2026-10-23)
+**Document Status:** Active — Updated after M4-ML-UI-1 verification (2026-10-23)

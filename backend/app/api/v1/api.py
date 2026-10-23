@@ -6,6 +6,7 @@ from app.api.v1.endpoints import (
     database_lab,
     exams,
     health,
+    ml,
     questions,
     scheduler,
     topics,
@@ -20,3 +21,4 @@ api_router.include_router(exams.router, tags=["exams"])
 api_router.include_router(attempts.router, tags=["attempts"])
 api_router.include_router(scheduler.router, tags=["scheduler"])
 api_router.include_router(database_lab.router, tags=["database-lab"])
+api_router.include_router(ml.router, tags=["ml"])

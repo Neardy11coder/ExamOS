@@ -1,0 +1,45 @@
+{
+  "artifact_version": "1.0.0",
+  "trained_at": "2026-10-23T15:53:54.822217+00:00",
+  "taxonomy_classes": [
+    "OS_PROCESS",
+    "OS_SCHEDULING",
+    "OS_SYNC",
+    "OS_MEMORY_FILES",
+    "DB_NORMALIZATION",
+    "DB_SQL_JOINS",
+    "DB_TRANSACTIONS",
+    "DB_INDEXING"
+  ],
+  "model_classes": [
+    "DB_INDEXING",
+    "DB_NORMALIZATION",
+    "DB_SQL_JOINS",
+    "DB_TRANSACTIONS",
+    "OS_MEMORY_FILES",
+    "OS_PROCESS",
+    "OS_SCHEDULING",
+    "OS_SYNC"
+  ],
+  "dataset_total_samples": 160,
+  "train_samples": 128,
+  "test_samples": 32,
+  "split_seed": 42,
+  "test_size": 0.2,
+  "library_versions": {
+    "scikit_learn": "1.5.2",
+    "joblib": "1.6.0",
+    "python": "3.11.9"
+  },
+  "pipeline_parameters": {
+    "tfidf__ngram_range": [
+      1,
+      2
+    ],
+    "tfidf__sublinear_tf": true,
+    "classifier__C": 1.0,
+    "classifier__max_iter": 1000,
+    "classifier__solver": "lbfgs",
+    "classifier__random_state": 42
+  }
+}

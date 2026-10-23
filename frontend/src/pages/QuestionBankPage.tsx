@@ -1,5 +1,5 @@
 /**
- * Question Bank Page — /faculty/questions (M1-EXAM-UI-1).
+ * Question Bank Page — /faculty/questions (M1-EXAM-UI-1, M4-ML-UI-1).
  *
  * Responsibilities:
  * - List questions in question bank with authoring metadata, options count, topic badge, and archive status.
@@ -7,10 +7,11 @@
  * - Create new question modal with 2-6 options, exactly one correct option, and display order.
  * - Edit existing question modal (only for active questions).
  * - Archive confirmation dialog modal (soft-archive via POST /api/v1/questions/{id}/archive).
+ * - ML topic suggestion panel: explicit "Suggest Topic" action, Use/Dismiss flow (M4-ML-UI-1).
  * - Preserves CSRF, shows clear validation errors, loading, and empty states.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -22,6 +23,7 @@ import {
   Plus,
   RotateCcw,
   Search,
+  Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
@@ -36,6 +38,10 @@ import {
   type QuestionRead,
   type TopicRead,
 } from '../api/faculty';
+import {
+  apiGetTopicSuggestion,
+  type TopicSuggestionDetails,
+} from '../api/ml';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/ui';
 
@@ -68,6 +74,14 @@ export function QuestionBankPage() {
   ]);
   const [editorError, setEditorError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // ML Topic Suggestion state (M4-ML-UI-1)
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestionResult, setSuggestionResult] = useState<TopicSuggestionDetails | null>(null);
+  const [suggestionUnavailableReason, setSuggestionUnavailableReason] = useState<string | null>(null);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  // Track last prompt+options snapshot sent so we can detect staleness
+  const lastSuggestSnapshotRef = useRef<string>('');
 
   // Modal: Archive Confirmation
   const [archivingQuestion, setArchivingQuestion] = useState<QuestionRead | null>(null);
@@ -115,6 +129,15 @@ export function QuestionBankPage() {
   // -------------------------------------------------------------------------
   // Editor Handlers
   // -------------------------------------------------------------------------
+
+  /** Reset ML suggestion state — call whenever the editor opens, closes, or switches question. */
+  function clearSuggestion() {
+    setSuggestionResult(null);
+    setSuggestionUnavailableReason(null);
+    setSuggestionError(null);
+    lastSuggestSnapshotRef.current = '';
+  }
+
   function openCreateModal() {
     setEditingQuestion(null);
     setPromptInput('');
@@ -124,6 +147,7 @@ export function QuestionBankPage() {
       { text: '', is_correct: false },
     ]);
     setEditorError(null);
+    clearSuggestion();
     setIsEditorOpen(true);
   }
 
@@ -138,7 +162,75 @@ export function QuestionBankPage() {
       })),
     );
     setEditorError(null);
+    clearSuggestion();
     setIsEditorOpen(true);
+  }
+
+  /**
+   * Request a topic suggestion from the ML service.
+   * Uses the current promptInput and optionsDraft texts.
+   * This is an explicit user action — never called automatically.
+   */
+  async function handleSuggestTopic() {
+    const trimmedPrompt = promptInput.trim();
+    if (!trimmedPrompt) {
+      setSuggestionError('Enter a question prompt before requesting a topic suggestion.');
+      return;
+    }
+
+    // Build snapshot key to detect if content has changed since last call
+    const optionTexts = optionsDraft.map((o) => o.text.trim()).filter(Boolean);
+    const snapshot = JSON.stringify({ prompt: trimmedPrompt, options: optionTexts });
+
+    // Clear stale state first, THEN set the snapshot ref.
+    // clearSuggestion() resets lastSuggestSnapshotRef to '', so the ref must
+    // be written after the clear — otherwise the stale-content guard below
+    // always sees '' !== snapshot and silently discards the API response.
+    clearSuggestion();
+    lastSuggestSnapshotRef.current = snapshot;
+    setIsSuggesting(true);
+
+    try {
+      const response = await apiGetTopicSuggestion(
+        { prompt: trimmedPrompt, options: optionTexts.length > 0 ? optionTexts : undefined },
+        csrfToken,
+      );
+
+      // Discard result if the user changed content while the request was in flight
+      if (lastSuggestSnapshotRef.current !== snapshot) return;
+
+      if (response.available && response.suggestion) {
+        setSuggestionResult(response.suggestion);
+      } else {
+        const reason = response.available === false ? response.reason : 'LOW_CONFIDENCE';
+        setSuggestionUnavailableReason(reason);
+      }
+    } catch (err: unknown) {
+      if (lastSuggestSnapshotRef.current !== snapshot) return;
+      const msg = err instanceof Error ? err.message : 'Topic suggestion request failed.';
+      setSuggestionError(msg);
+    } finally {
+      setIsSuggesting(false);
+    }
+  }
+
+  /**
+   * Apply the displayed suggestion to the topic selector.
+   * Looks up the topic_code in the already-loaded topics list and sets topicInput
+   * to the matching topic UUID. If the code is not found, shows a safe message.
+   */
+  function handleUseSuggestion() {
+    if (!suggestionResult) return;
+    const match = topics.find((t) => t.code === suggestionResult.topic_code);
+    if (match) {
+      setTopicInput(match.id);
+      clearSuggestion();
+    } else {
+      setSuggestionError(
+        `Suggested topic code "${suggestionResult.topic_code}" is not available in the current topic list. Please select a topic manually.`,
+      );
+      setSuggestionResult(null);
+    }
   }
 
   function handleAddOption() {
@@ -147,6 +239,7 @@ export function QuestionBankPage() {
       return;
     }
     setEditorError(null);
+    clearSuggestion();
     setOptionsDraft((prev) => [...prev, { text: '', is_correct: false }]);
   }
 
@@ -156,6 +249,7 @@ export function QuestionBankPage() {
       return;
     }
     setEditorError(null);
+    clearSuggestion();
     const wasCorrect = optionsDraft[index].is_correct;
     const next = optionsDraft.filter((_, idx) => idx !== index);
     if (wasCorrect && next.length > 0) {
@@ -173,10 +267,16 @@ export function QuestionBankPage() {
     );
   }
 
+  function handlePromptChange(val: string) {
+    setPromptInput(val);
+    clearSuggestion();
+  }
+
   function handleOptionTextChange(index: number, val: string) {
     setOptionsDraft((prev) =>
       prev.map((opt, idx) => (idx === index ? { ...opt, text: val } : opt)),
     );
+    clearSuggestion();
   }
 
   async function handleSaveQuestion(e: React.FormEvent) {
@@ -490,7 +590,7 @@ export function QuestionBankPage() {
               <button
                 type="button"
                 className="btn-icon"
-                onClick={() => setIsEditorOpen(false)}
+                onClick={() => { setIsEditorOpen(false); clearSuggestion(); }}
                 disabled={isSaving}
                 aria-label="Close"
               >
@@ -514,7 +614,7 @@ export function QuestionBankPage() {
                   <textarea
                     id="q-prompt"
                     value={promptInput}
-                    onChange={(e) => setPromptInput(e.target.value)}
+                    onChange={(e) => handlePromptChange(e.target.value)}
                     className="form-input"
                     rows={3}
                     placeholder="Enter question prompt..."
@@ -529,7 +629,12 @@ export function QuestionBankPage() {
                   <select
                     id="q-topic"
                     value={topicInput}
-                    onChange={(e) => setTopicInput(e.target.value)}
+                    onChange={(e) => {
+                      setTopicInput(e.target.value);
+                      if (suggestionResult || suggestionUnavailableReason || suggestionError) {
+                        clearSuggestion();
+                      }
+                    }}
                     className="form-input"
                   >
                     <option value="">No Topic Assigned</option>
@@ -539,6 +644,138 @@ export function QuestionBankPage() {
                       </option>
                     ))}
                   </select>
+
+                  {/* ML Suggest Topic action (M4-ML-UI-1) */}
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm"
+                      onClick={handleSuggestTopic}
+                      disabled={isSuggesting || isSaving || !promptInput.trim()}
+                      aria-busy={isSuggesting}
+                      aria-label="Request an automatic topic suggestion from the ML classifier"
+                      id="suggest-topic-btn"
+                    >
+                      {isSuggesting
+                        ? <><LoadingSpinner size="sm" />&nbsp;Suggesting…</>
+                        : <><Sparkles size={14} className="btn__icon" aria-hidden="true" />Suggest Topic</>}
+                    </button>
+                  </div>
+
+                  {/* Suggestion result panel */}
+                  {(suggestionResult || suggestionUnavailableReason || suggestionError) && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      aria-atomic="true"
+                      style={{
+                        marginTop: '0.625rem',
+                        padding: '0.75rem',
+                        borderRadius: 'var(--radius-md)',
+                        border: suggestionResult
+                          ? '1px solid rgba(139, 92, 246, 0.35)'
+                          : suggestionError
+                          ? '1px solid rgba(248, 113, 113, 0.35)'
+                          : '1px solid var(--color-border-subtle)',
+                        background: suggestionResult
+                          ? 'rgba(139, 92, 246, 0.08)'
+                          : suggestionError
+                          ? 'rgba(248, 113, 113, 0.08)'
+                          : 'var(--color-surface-2)',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {/* High-confidence suggestion available */}
+                      {suggestionResult && (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                            <Sparkles size={13} style={{ color: 'var(--color-accent)' }} aria-hidden="true" />
+                            <span style={{ fontWeight: 600, color: 'var(--color-accent)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                              Automatic Topic Suggestion
+                            </span>
+                          </div>
+                          <div style={{ marginBottom: '0.5rem' }}>
+                            <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>
+                              {suggestionResult.topic_name}
+                            </span>
+                            <span style={{ color: 'var(--color-text-muted)', marginLeft: '0.4rem' }}>
+                              [{suggestionResult.topic_code}]
+                            </span>
+                          </div>
+                          <div style={{ color: 'var(--color-text-muted)', marginBottom: '0.625rem', fontSize: '0.8rem' }}>
+                            Confidence: {Math.round(suggestionResult.confidence * 100)}%
+                            {' '}(threshold: {Math.round(suggestionResult.threshold * 100)}%)
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                              type="button"
+                              className="btn btn--primary btn--sm"
+                              onClick={handleUseSuggestion}
+                              id="use-suggestion-btn"
+                            >
+                              Use Suggestion
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn--ghost btn--sm"
+                              onClick={clearSuggestion}
+                              id="dismiss-suggestion-btn"
+                            >
+                              Dismiss
+                            </button>
+                          </div>
+                        </>
+                      )}
+
+                      {/* No suggestion available */}
+                      {suggestionUnavailableReason && !suggestionResult && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <Sparkles size={13} style={{ color: 'var(--color-text-muted)', marginTop: '0.1rem', flexShrink: 0 }} aria-hidden="true" />
+                            <span style={{ color: 'var(--color-text-muted)' }}>
+                              {suggestionUnavailableReason === 'LOW_CONFIDENCE'
+                                ? 'No confident topic suggestion — the classifier could not determine a topic with sufficient certainty. Please select a topic manually.'
+                                : suggestionUnavailableReason === 'MODEL_NOT_FOUND' || suggestionUnavailableReason === 'MODEL_LOAD_FAILED'
+                                ? 'The ML topic classifier is not currently available. Please select a topic manually.'
+                                : 'Topic suggestion unavailable. Please select a topic manually.'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn-icon"
+                            onClick={clearSuggestion}
+                            aria-label="Dismiss message"
+                            title="Dismiss"
+                            style={{ padding: '2px', color: 'var(--color-text-muted)', flexShrink: 0 }}
+                          >
+                            <X size={14} aria-hidden="true" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Network or API error — separate from form validation */}
+                      {suggestionError && !suggestionResult && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <AlertCircle size={13} style={{ color: 'var(--color-error)', marginTop: '0.1rem', flexShrink: 0 }} aria-hidden="true" />
+                            <span style={{ color: 'var(--color-error)' }}>
+                              {suggestionError}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn-icon"
+                            onClick={clearSuggestion}
+                            aria-label="Dismiss error"
+                            title="Dismiss"
+                            style={{ padding: '2px', color: 'var(--color-error)', flexShrink: 0 }}
+                          >
+                            <X size={14} aria-hidden="true" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -597,7 +834,7 @@ export function QuestionBankPage() {
                 <button
                   type="button"
                   className="btn btn--ghost"
-                  onClick={() => setIsEditorOpen(false)}
+                  onClick={() => { setIsEditorOpen(false); clearSuggestion(); }}
                   disabled={isSaving}
                 >
                   Cancel

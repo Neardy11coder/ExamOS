@@ -1,0 +1,161 @@
+topic_code,text,notes
+OS_PROCESS,"What is the main role of the Process Control Block (PCB) in an operating system?",os_process_01
+OS_PROCESS,"Which system call creates a duplicate child process in Unix-like systems such as Linux?",os_process_02
+OS_PROCESS,"Explain the difference between a process context switch and a user-to-kernel mode switch.",os_process_03
+OS_PROCESS,"What happens when a child process terminates but the parent has not yet called wait()?",os_process_04
+OS_PROCESS,"Identify the memory segments that make up the virtual address space of a running user process.",os_process_05
+OS_PROCESS,"How does inter-process communication (IPC) through shared memory differ from message queues?",os_process_06
+OS_PROCESS,"Which state does a process transition to when waiting for an I/O operation to complete?",os_process_07
+OS_PROCESS,"Describe the purpose of the init or systemd daemon as the ancestor of orphan processes.",os_process_08
+OS_PROCESS,"What information is saved into CPU registers during a process context switch by the dispatcher?",os_process_09
+OS_PROCESS,"Compare user-level threads with kernel-level threads in terms of creation and switching overhead.",os_process_10
+OS_PROCESS,"What is the function of the fork-exec pattern commonly used by command shells?",os_process_11
+OS_PROCESS,"Explain how the process ready queue differs from the device wait queue in an OS kernel.",os_process_12
+OS_PROCESS,"What causes a process to transition from the running state back to the ready state?",os_process_13
+OS_PROCESS,"Describe the structure and purpose of the thread control block (TCB) relative to the PCB.",os_process_14
+OS_PROCESS,"How does copy-on-write (COW) optimize process creation during the fork system call?",os_process_15
+OS_PROCESS,"What occurs when a process attempts to access memory outside its allocated address space?",os_process_16
+OS_PROCESS,"Which POSIX system call terminates a process and returns an exit status to its parent?",os_process_17
+OS_PROCESS,"Explain the role of pipes and named FIFOs for unidirectional inter-process byte streams.",os_process_18
+OS_PROCESS,"Why is thread switching generally faster and less resource-intensive than process context switching?",os_process_19
+OS_PROCESS,"What signal is delivered to a parent process when one of its child processes changes state or terminates?",os_process_20
+OS_SCHEDULING,"How does Round Robin scheduling select the time quantum to balance responsiveness and overhead?",os_scheduling_01
+OS_SCHEDULING,"Explain the convoy effect and which scheduling algorithm typically suffers from it.",os_scheduling_02
+OS_SCHEDULING,"In Shortest Job First (SJF) scheduling, how is the duration of the next CPU burst estimated?",os_scheduling_03
+OS_SCHEDULING,"What is the difference between preemptive and non-preemptive CPU scheduling policies?",os_scheduling_04
+OS_SCHEDULING,"Define CPU turnaround time and how it is computed from completion time and arrival time.",os_scheduling_05
+OS_SCHEDULING,"Calculate the average waiting time for a set of processes scheduled under First-Come First-Served.",os_scheduling_06
+OS_SCHEDULING,"How does a Multilevel Feedback Queue (MLFQ) adjust process priority based on observed CPU burst behavior?",os_scheduling_07
+OS_SCHEDULING,"What is starvation in priority scheduling, and how does aging prevent indefinitely postponed jobs?",os_scheduling_08
+OS_SCHEDULING,"Compare Shortest Remaining Time First (SRTF) with standard non-preemptive Shortest Job First.",os_scheduling_09
+OS_SCHEDULING,"What metric measures the fraction of time the processor is actively executing user or kernel tasks?",os_scheduling_10
+OS_SCHEDULING,"Explain how response time is measured in interactive operating systems.",os_scheduling_11
+OS_SCHEDULING,"How does completely fair scheduler (CFS) use virtual runtime (vruntime) to schedule tasks?",os_scheduling_12
+OS_SCHEDULING,"What trade-off arises when choosing an extremely small time slice in time-sharing schedulers?",os_scheduling_13
+OS_SCHEDULING,"Which scheduling criterion measures the number of completed processes per unit of elapsed time?",os_scheduling_14
+OS_SCHEDULING,"In lottery scheduling, how does the assignment of tickets determine process execution probability?",os_scheduling_15
+OS_SCHEDULING,"Explain rate-monotonic scheduling and earliest deadline first in real-time operating systems.",os_scheduling_16
+OS_SCHEDULING,"Why can non-preemptive priority scheduling cause low-priority processes to block high-priority arrivals?",os_scheduling_17
+OS_SCHEDULING,"What role does the dispatcher play after the short-term CPU scheduler chooses a process?",os_scheduling_18
+OS_SCHEDULING,"How does asymmetric multiprocessing scheduling differ from symmetric multiprocessing (SMP) scheduling?",os_scheduling_19
+OS_SCHEDULING,"Under what conditions does Shortest Job First provably achieve the minimum average waiting time?",os_scheduling_20
+OS_SYNC,"What are the four necessary Coffman conditions required for a system deadlock to occur?",os_sync_01
+OS_SYNC,"Explain how Dijkstra's Banker's Algorithm determines if granting a resource request leaves the system safe.",os_sync_02
+OS_SYNC,"How does a binary semaphore differ from a counting semaphore in concurrent programming?",os_sync_03
+OS_SYNC,"What is a race condition, and what three requirements must a solution to the critical section satisfy?",os_sync_04
+OS_SYNC,"Describe how Peterson's algorithm achieves mutual exclusion between two cooperating concurrent processes.",os_sync_05
+OS_SYNC,"How do test-and-set and compare-and-swap atomic hardware instructions implement spinlocks?",os_sync_06
+OS_SYNC,"Explain priority inversion and how the priority inheritance protocol mitigates unbounded blocking.",os_sync_07
+OS_SYNC,"In the Dining Philosophers problem, what synchronization strategy prevents circular deadlocks?",os_sync_08
+OS_SYNC,"How does a condition variable differ from a mutex lock in monitor-based thread synchronization?",os_sync_09
+OS_SYNC,"Describe the Resource Allocation Graph (RAG) and how cycle detection identifies deadlocks.",os_sync_10
+OS_SYNC,"What is the difference between deadlock prevention, deadlock avoidance, and deadlock detection?",os_sync_11
+OS_SYNC,"Explain how the Producer-Consumer problem uses empty, full, and mutex semaphores for bounded buffers.",os_sync_12
+OS_SYNC,"What is the readers-writers problem, and how can writer starvation be avoided in shared data access?",os_sync_13
+OS_SYNC,"Why can busy waiting (spinlocks) waste excessive CPU cycles on uniprocessor architectures?",os_sync_14
+OS_SYNC,"How does an operating system kernel recover from a detected deadlock using process termination or preemption?",os_sync_15
+OS_SYNC,"Explain the concept of hold and wait, and describe a protocol that prevents this deadlock condition.",os_sync_16
+OS_SYNC,"What is a futex in the Linux kernel and how does it optimize uncontended lock acquisition?",os_sync_17
+OS_SYNC,"Describe why circular wait can be eliminated by imposing a strict linear ordering on all resource types.",os_sync_18
+OS_SYNC,"What guarantees does a reentrant monitor construct provide over raw mutex and condition variable pairs?",os_sync_19
+OS_SYNC,"How do memory barriers and memory fences prevent instruction reordering bugs in multithreaded code?",os_sync_20
+OS_MEMORY_FILES,"How does paging translate virtual addresses into physical addresses using page tables and page offsets?",os_mem_01
+OS_MEMORY_FILES,"What is the purpose of the Translation Lookaside Buffer (TLB) and how does a TLB miss get handled?",os_mem_02
+OS_MEMORY_FILES,"Explain the difference between internal fragmentation and external fragmentation in memory allocation.",os_mem_03
+OS_MEMORY_FILES,"Describe the FIFO page replacement algorithm and demonstrate Belady's anomaly.",os_mem_04
+OS_MEMORY_FILES,"How does the Least Recently Used (LRU) page replacement policy select which frame to evict?",os_mem_05
+OS_MEMORY_FILES,"What is thrashing in virtual memory systems, and how does the working-set model detect and resolve it?",os_mem_06
+OS_MEMORY_FILES,"Explain the structure of an inode in Unix file systems including direct and indirect block pointers.",os_mem_07
+OS_MEMORY_FILES,"How does a multi-level page table reduce memory overhead for sparse virtual address spaces?",os_mem_08
+OS_MEMORY_FILES,"Describe how journaling file systems prevent metadata inconsistency after an unexpected crash.",os_mem_09
+OS_MEMORY_FILES,"Compare contiguous allocation, linked allocation, and indexed allocation for file system disk blocks.",os_mem_10
+OS_MEMORY_FILES,"What triggers a page fault exception, and what are the steps taken by the kernel to service it?",os_mem_11
+OS_MEMORY_FILES,"Explain the difference between a hard link and a symbolic soft link in Unix file directory hierarchies.",os_mem_12
+OS_MEMORY_FILES,"How does the second-chance (clock) page replacement algorithm approximate true LRU behavior?",os_mem_13
+OS_MEMORY_FILES,"Describe the file allocation table (FAT) file system architecture and how file cluster chains are traversed.",os_mem_14
+OS_MEMORY_FILES,"What is memory-mapped file I/O (mmap) and how does it allow files to be accessed via pointer dereferences?",os_mem_15
+OS_MEMORY_FILES,"Explain segmentation and how segment base and limit registers protect different program logical units.",os_mem_16
+OS_MEMORY_FILES,"How does inverted page table organization scale with physical memory size rather than virtual address space?",os_mem_17
+OS_MEMORY_FILES,"What is the function of the buffer cache and page cache in modern operating system storage architectures?",os_mem_18
+OS_MEMORY_FILES,"Describe the dirty bit (modified bit) in page table entries and its role during page replacement.",os_mem_19
+OS_MEMORY_FILES,"How does copy-on-write virtual memory paging allow parent and child processes to share physical memory safely?",os_mem_20
+DB_NORMALIZATION,"What functional dependency condition defines Boyce-Codd Normal Form (BCNF)?",db_norm_01
+DB_NORMALIZATION,"Explain the requirements for a relational database schema to satisfy Second Normal Form (2NF).",db_norm_02
+DB_NORMALIZATION,"How does Third Normal Form (3NF) eliminate transitive functional dependencies between non-prime attributes?",db_norm_03
+DB_NORMALIZATION,"What is a multivalued dependency (MVD), and which normal form is specifically designed to eliminate it?",db_norm_04
+DB_NORMALIZATION,"Define Armstrong's axioms: reflexivity, augmentation, and transitivity for functional dependencies.",db_norm_05
+DB_NORMALIZATION,"How do you compute the attribute closure of a set of attributes under given functional dependencies?",db_norm_06
+DB_NORMALIZATION,"Explain lossless-join decomposition and how to verify if a relational decomposition preserves all data.",db_norm_07
+DB_NORMALIZATION,"What is dependency preservation, and why can some relations not be decomposed into BCNF while preserving dependencies?",db_norm_08
+DB_NORMALIZATION,"Describe First Normal Form (1NF) and the requirement that all attribute domain values be atomic.",db_norm_09
+DB_NORMALIZATION,"How is a candidate key identified from the minimal superkeys of a relational schema?",db_norm_10
+DB_NORMALIZATION,"What insertion, update, and deletion anomalies occur in unnormalized flat table designs?",db_norm_11
+DB_NORMALIZATION,"Explain the difference between a prime attribute and a non-prime attribute in relational normalization.",db_norm_12
+DB_NORMALIZATION,"How does Fourth Normal Form (4NF) decompose relations containing independent multivalued facts?",db_norm_13
+DB_NORMALIZATION,"What is the canonical minimal cover of a set of functional dependencies and how is it derived?",db_norm_14
+DB_NORMALIZATION,"In relational schema synthesis, how is a 3NF design guaranteed to be both lossless and dependency-preserving?",db_norm_15
+DB_NORMALIZATION,"Describe Fifth Normal Form (5NF / Project-Join Normal Form) and join dependencies.",db_norm_16
+DB_NORMALIZATION,"Why might a database architect intentionally denormalize a reporting table in a data warehouse?",db_norm_17
+DB_NORMALIZATION,"How does a surrogate primary key differ from a natural composite primary key in schema modeling?",db_norm_18
+DB_NORMALIZATION,"Explain partial functional dependency and why 2NF strictly prohibits non-prime attributes depending on part of a key.",db_norm_19
+DB_NORMALIZATION,"What formal condition determines whether a relational decomposition is guaranteed to produce no spurious tuples?",db_norm_20
+DB_SQL_JOINS,"What is the difference between an INNER JOIN and a FULL OUTER JOIN in SQL query semantics?",db_sql_01
+DB_SQL_JOINS,"How does a LEFT OUTER JOIN handle rows from the left table that have no matching records in the right table?",db_sql_02
+DB_SQL_JOINS,"Explain how SQL window functions like ROW_NUMBER(), RANK(), and DENSE_RANK() partition and order result sets.",db_sql_03
+DB_SQL_JOINS,"What is a correlated subquery in SQL, and how does its execution differ from an uncorrelated nested subquery?",db_sql_04
+DB_SQL_JOINS,"Explain the difference between the WHERE clause and the HAVING clause when filtering grouped query results.",db_sql_05
+DB_SQL_JOINS,"How does a CROSS JOIN produce the Cartesian product of two relations in relational algebra and SQL?",db_sql_06
+DB_SQL_JOINS,"What is a Common Table Expression (CTE) and how does a recursive CTE traverse hierarchical tree data in SQL?",db_sql_07
+DB_SQL_JOINS,"Describe how NULL values affect equality comparisons in SQL joins and boolean three-valued logic expressions.",db_sql_08
+DB_SQL_JOINS,"Compare the UNION operator with UNION ALL in terms of result set deduplication and query execution cost.",db_sql_09
+DB_SQL_JOINS,"How does an EXISTS clause evaluate compared to an IN clause when checking for record presence in subqueries?",db_sql_10
+DB_SQL_JOINS,"Explain self-joins and give an example of querying employee-manager relationships within the same table.",db_sql_11
+DB_SQL_JOINS,"What are the grouping set extensions in SQL: GROUP BY GROUPING SETS, CUBE, and ROLLUP?",db_sql_12
+DB_SQL_JOINS,"How do scalar aggregate functions like AVG, SUM, and COUNT handle NULL values in column projections?",db_sql_13
+DB_SQL_JOINS,"Explain the difference between a NATURAL JOIN and an explicit JOIN with an ON predicate condition.",db_sql_14
+DB_SQL_JOINS,"How does the SQL COALESCE function handle multiple nullable arguments compared to NULLIF?",db_sql_15
+DB_SQL_JOINS,"Describe how lateral joins (CROSS JOIN LATERAL) allow subqueries to reference columns of preceding join tables.",db_sql_16
+DB_SQL_JOINS,"What is the semantic difference between INTERSECT and EXCEPT operators in relational set operations?",db_sql_17
+DB_SQL_JOINS,"How does an equi-join differ from a theta-join with non-equality comparison predicates?",db_sql_18
+DB_SQL_JOINS,"Explain how CASE WHEN expressions provide conditional projection logic within SQL SELECT statements.",db_sql_19
+DB_SQL_JOINS,"What does the OVER clause specify when computing a rolling moving average with ROWS BETWEEN preceding and current row?",db_sql_20
+DB_TRANSACTIONS,"Define the four ACID properties: Atomicity, Consistency, Isolation, and Durability in database transactions.",db_tx_01
+DB_TRANSACTIONS,"What concurrency anomaly is permitted in Read Committed isolation level but prohibited in Repeatable Read?",db_tx_02
+DB_TRANSACTIONS,"Explain dirty reads, non-repeatable reads, and phantom reads as defined in the ANSI SQL isolation levels.",db_tx_03
+DB_TRANSACTIONS,"How does Two-Phase Locking (2PL) guarantee serializability, and what is the difference between growing and shrinking phases?",db_tx_04
+DB_TRANSACTIONS,"Describe Multi-Version Concurrency Control (MVCC) and how snapshot isolation avoids readers blocking writers.",db_tx_05
+DB_TRANSACTIONS,"What is Write-Ahead Logging (WAL) and how does it guarantee transaction durability before flushing dirty pages?",db_tx_06
+DB_TRANSACTIONS,"Explain the ARIES recovery algorithm phases: Analysis, Redo, and Undo during database restart after failure.",db_tx_07
+DB_TRANSACTIONS,"How does a database transaction manager detect deadlocks using a wait-for graph and cycle detection?",db_tx_08
+DB_TRANSACTIONS,"Compare optimistic concurrency control (validation-based) with pessimistic concurrency control (locking).",db_tx_09
+DB_TRANSACTIONS,"What is a savepoint within a database transaction and how does ROLLBACK TO SAVEPOINT work?",db_tx_10
+DB_TRANSACTIONS,"Explain cascading rollbacks and how strict two-phase locking (Strict 2PL) prevents them.",db_tx_11
+DB_TRANSACTIONS,"What is write skew anomaly in snapshot isolation and why does it require serializable snapshot isolation (SSI)?",db_tx_12
+DB_TRANSACTIONS,"Describe the purpose of checkpointing in transaction logs to limit log replay duration during recovery.",db_tx_13
+DB_TRANSACTIONS,"How does shared (read) and exclusive (write) lock compatibility govern concurrent access to database rows?",db_tx_14
+DB_TRANSACTIONS,"Explain the two-phase commit (2PC) protocol used for atomic distributed transactions across multiple nodes.",db_tx_15
+DB_TRANSACTIONS,"What is conflict serializability, and how does precedence graph (serialization graph) testing verify it?",db_tx_16
+DB_TRANSACTIONS,"Describe intentional locks (IS, IX, SIX) in multiple granularity locking for tables, pages, and tuples.",db_tx_17
+DB_TRANSACTIONS,"How does an explicit SELECT FOR UPDATE query acquire row-level locks to prevent lost updates?",db_tx_18
+DB_TRANSACTIONS,"What happens when a transaction aborts in terms of compensating actions and log record generation?",db_tx_19
+DB_TRANSACTIONS,"Explain how timestamp ordering protocol schedules transactions to achieve serializability without deadlocks.",db_tx_20
+DB_INDEXING,"How does a B+ Tree index differ from a standard B-Tree index in terms of leaf node linking and range scans?",db_indexing_01
+DB_INDEXING,"Explain the difference between a clustered index and a non-clustered secondary index in storage organization.",db_indexing_02
+DB_INDEXING,"What is a covering index, and how does an Index Only Scan satisfy queries without reading table heap blocks?",db_indexing_03
+DB_INDEXING,"Under what conditions will the query planner choose a full Sequential Scan over an Index Scan on an indexed column?",db_indexing_04
+DB_INDEXING,"Describe how composite indexes work and explain the leftmost prefix rule for multi-column index lookups.",db_indexing_05
+DB_INDEXING,"How does PostgreSQL EXPLAIN ANALYZE measure actual execution times, planning times, and buffer cache hits?",db_indexing_06
+DB_INDEXING,"Compare Hash Join, Merge Join, and Nested Loop Join execution strategies in relational query planners.",db_indexing_07
+DB_INDEXING,"What is index selectivity, and why do low-cardinality boolean or status columns often make poor index candidates?",db_indexing_08
+DB_INDEXING,"Explain partial indexes (filtered indexes) in PostgreSQL and when index storage can be saved with a WHERE clause.",db_indexing_09
+DB_INDEXING,"How do expression-based functional indexes allow index lookups on computed values like LOWER(email)?",db_indexing_10
+DB_INDEXING,"Describe the trade-offs of secondary indexes: query acceleration versus write, insert, and update overhead.",db_indexing_11
+DB_INDEXING,"What information do database catalog statistics (like pg_statistic and ANALYZE) provide to cost-based optimizers?",db_indexing_12
+DB_INDEXING,"Explain Bitmap Index Scan and Bitmap Heap Scan in PostgreSQL when combining multiple index matches.",db_indexing_13
+DB_INDEXING,"What is index bloat in MVCC databases and how does REINDEX or VACUUM reclaim fragmented B-tree space?",db_indexing_14
+DB_INDEXING,"How does a GiST or GIN inverted index accelerate full-text search, array containment, and JSONB queries?",db_indexing_15
+DB_INDEXING,"Explain why wrapping an indexed column in an unindexed function call prevents the query planner from using the index.",db_indexing_16
+DB_INDEXING,"Compare clustered index tuple ordering with table clustering commands (CLUSTER) in PostgreSQL.",db_indexing_17
+DB_INDEXING,"What is the role of the database cost model in estimating disk I/O cost (seq_page_cost vs random_page_cost)?",db_indexing_18
+DB_INDEXING,"How does an index on a foreign key column accelerate join operations and foreign key delete cascade checks?",db_indexing_19
+DB_INDEXING,"Describe BRIN (Block Range Index) in PostgreSQL and how it efficiently indexes physically sorted time-series data.",db_indexing_20
