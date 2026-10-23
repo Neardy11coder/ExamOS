@@ -183,23 +183,17 @@ Update this section at the end of each development session or before switching c
 ### Current status
 
 - **Last updated:** 2026-10-23
-- **Current milestone:** M1-EXAM-UI-1 complete — faculty exam authoring UI (question bank manager, exam draft builder, question selector/reorder, review modal, and atomic publication).
-- **M1-EXAM-UI-1 starting commit (HEAD at start of work):** `5c6e82a` — `feat(frontend): implement student examination UI`
-- **Current HEAD:** `5c6e82a` (same as `origin/main`).
-- **Branch:** `main`, tracking `origin/main`. Working tree contains uncommitted M1-EXAM-UI-1 frontend implementation.
+- **Current milestone:** M1-EXAM-UI-1 & M1-STUD-UI-1 complete, verified via manual browser smoke test (faculty question authoring, draft creation, attachment, publication, student attempt, autosave, submission, and finalized scoring).
+- **Current HEAD:** `d200092` — `feat(frontend): implement faculty exam authoring UI` (tracking `origin/main`).
+- **Branch:** `main`, tracking `origin/main`. Working tree contains uncommitted post-smoke-test marks precision standardizations.
 
-### Uncommitted local changes (all M1-EXAM-UI-1 work)
+### Uncommitted local changes (post-smoke-test audit)
 
 **Modified tracked files:**
-- `frontend/src/App.tsx` — mounted `/faculty/questions`, `/faculty/exams`, and `/faculty/exams/:examId` routes protected by role `FACULTY_ADMIN`.
-- `frontend/src/pages/DashboardPage.tsx` — connected Examinations and Question Bank navigation cards to `/faculty/exams` and `/faculty/questions`.
+- `frontend/src/pages/ExamEditorPage.tsx` — formatted question marks to 2 decimal places (`toFixed(2)`) for consistency with total exam marks.
+- `frontend/src/pages/AttemptWorkspacePage.tsx` — formatted active question marks to 2 decimal places (`toFixed(2)`) for consistency.
+- `frontend/src/pages/AttemptResultPage.tsx` — formatted breakdown question marks, score delta, and score badge subtext to 2 decimal places (`toFixed(2)`).
 - `docs/10_SETUP_AND_HANDOVER.md` — this document.
-
-**New files added in M1-EXAM-UI-1:**
-- `frontend/src/api/faculty.ts` — TypeScript API client for topics, question bank CRUD, exam draft authoring, question attachment/reordering, and atomic publishing/unpublishing.
-- `frontend/src/pages/QuestionBankPage.tsx` — faculty question bank manager (`/faculty/questions`) with topic filters, search, create/edit modal with 2-6 options, and archive confirmation dialog.
-- `frontend/src/pages/FacultyExamsPage.tsx` — faculty examination registry and draft creation modal (`/faculty/exams`).
-- `frontend/src/pages/ExamEditorPage.tsx` — draft editor, metadata updates, question selector/reorder/remove, frozen assessment snapshot view, and atomic publishing review modal (`/faculty/exams/:examId`).
 
 ### Implemented and verified in M1-ATTEMPT-1
 
@@ -274,9 +268,19 @@ Update this section at the end of each development session or before switching c
 
 No changes have been staged, committed, pushed, reset, or discarded.
 
-### Unverified browser behavior
+### Manual browser smoke-test verification (observed 2026-10-23)
 
-Interactive student browser-driven flows (clicking radio buttons in a live browser, running real-time 1-second interval timers against a running backend API, submission modal click through) have not been exercised via automated browser drivers because Playwright/automated browser binaries cannot be downloaded in this environment. All student examination UI pages (`/exams/available`, `/attempts/:attemptId`, `/attempts/:attemptId/result`) are marked **NOT VERIFIED via automated browser test** and require interactive manual browser testing.
+An interactive manual end-to-end smoke test was performed in the local browser covering:
+1. Faculty authentication and landing on dashboard (`FACULTY_ADMIN` role badge).
+2. Question authoring via Question Bank: created question with prompt `"what is my name guess it?"` with two options (`"hardik kapil"` marked correct, `"chat gpt"`).
+3. Examination draft creation: created draft titled `"guess my name"` with 3-minute duration and student instructions `"guess if you can"`.
+4. Question attachment and atomic exam publication: verified frozen assessment snapshot creation.
+5. Student examination workflow: opened published exam from `/exams/available`, launched attempt, selected radio option, durable save indicator confirmed save, opened submit confirmation dialog with accurate answered count.
+6. Submission and result finalization: submitted attempt, received terminal state (`SUBMITTED`), 100.0% score, 1.00 / 1.00 marks, with answer review showing student selection matched correct key.
+
+### Unverified automated browser behavior
+
+Automated browser driver tests (e.g. Playwright / Selenium CI suites) remain **NOT VERIFIED via automated browser test** because external browser binaries cannot be downloaded in this environment. Manual browser verification above confirmed interactive runtime stability.
 
 ### Commands verified
 

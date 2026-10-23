@@ -417,7 +417,7 @@ export function AttemptWorkspacePage() {
                     Question {currentIndex + 1} of {totalQuestions}
                   </span>
                   <span className="question-marks">
-                    {Number(currentQuestion.marks).toFixed(1)} marks
+                    {Number(currentQuestion.marks).toFixed(2)} marks
                   </span>
                 </div>
 

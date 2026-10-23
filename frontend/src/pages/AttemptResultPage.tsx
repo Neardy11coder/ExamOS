@@ -156,7 +156,7 @@ export function AttemptResultPage() {
                 {percentNum.toFixed(1)}%
               </div>
               <div className="results-score-badge__sub">
-                {scoreNum.toFixed(1)} / {totalMarksNum.toFixed(1)} marks
+                {scoreNum.toFixed(2)} / {totalMarksNum.toFixed(2)} marks
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@ export function AttemptResultPage() {
                     <div className="result-question-card__title-row">
                       <span className="result-q-number">Q{idx + 1}</span>
                       <span className="text-secondary" style={{ fontSize: '0.875rem' }}>
-                        {Number(q.marks).toFixed(1)} marks
+                        {Number(q.marks).toFixed(2)} marks
                       </span>
                       {q.topic_name && (
                         <span className="exam-badge" style={{ fontSize: '0.75rem' }}>
@@ -214,11 +214,11 @@ export function AttemptResultPage() {
                     <div className="result-q-outcome">
                       {isCorrect ? (
                         <span className="result-status-tag result-status-tag--correct">
-                          <CheckCircle2 size={15} aria-hidden="true" /> Correct (+{Number(q.marks).toFixed(1)})
+                          <CheckCircle2 size={15} aria-hidden="true" /> Correct (+{Number(q.marks).toFixed(2)})
                         </span>
                       ) : (
                         <span className="result-status-tag result-status-tag--incorrect">
-                          <XCircle size={15} aria-hidden="true" /> {hasAnswered ? 'Incorrect' : 'Unanswered'} (0.0)
+                          <XCircle size={15} aria-hidden="true" /> {hasAnswered ? 'Incorrect' : 'Unanswered'} (0.00)
                         </span>
                       )}
                     </div>

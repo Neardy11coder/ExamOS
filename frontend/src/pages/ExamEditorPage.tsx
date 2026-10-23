@@ -541,7 +541,7 @@ export function ExamEditorPage() {
                         #{idx + 1}
                       </span>
                       <span className="text-secondary" style={{ fontSize: '0.875rem' }}>
-                        {Number(q.marks).toFixed(1)} marks
+                        {Number(q.marks).toFixed(2)} marks
                       </span>
                       {topicLabel && (
                         <span className="exam-badge" style={{ fontSize: '0.75rem' }}>
