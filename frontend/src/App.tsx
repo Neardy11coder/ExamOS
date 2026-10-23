@@ -20,6 +20,9 @@ import { DashboardPage } from './pages/DashboardPage';
 import { AvailableExamsPage } from './pages/AvailableExamsPage';
 import { AttemptWorkspacePage } from './pages/AttemptWorkspacePage';
 import { AttemptResultPage } from './pages/AttemptResultPage';
+import { QuestionBankPage } from './pages/QuestionBankPage';
+import { FacultyExamsPage } from './pages/FacultyExamsPage';
+import { ExamEditorPage } from './pages/ExamEditorPage';
 import { LoadingSpinner } from './components/ui';
 
 /**
@@ -118,6 +121,32 @@ export function App() {
         element={
           <ProtectedRoute>
             <AttemptResultPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Faculty routes (M1-EXAM-UI-1) */}
+      <Route
+        path="/faculty/questions"
+        element={
+          <ProtectedRoute role="FACULTY_ADMIN">
+            <QuestionBankPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/faculty/exams"
+        element={
+          <ProtectedRoute role="FACULTY_ADMIN">
+            <FacultyExamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/faculty/exams/:examId"
+        element={
+          <ProtectedRoute role="FACULTY_ADMIN">
+            <ExamEditorPage />
           </ProtectedRoute>
         }
       />

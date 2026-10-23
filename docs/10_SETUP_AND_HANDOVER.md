@@ -183,24 +183,23 @@ Update this section at the end of each development session or before switching c
 ### Current status
 
 - **Last updated:** 2026-10-23
-- **Current milestone:** M1-STUD-UI-1 complete — student examination UI (catalogue, active workspace, durable answer saving, timer, submission, and finalized results).
-- **M1-STUD-UI-1 starting commit (HEAD at start of work):** `d84664e` — `feat(attempts): implement secure student examination lifecycle`
-- **Current HEAD:** `d84664e` (same as `origin/main`).
-- **Branch:** `main`, tracking `origin/main`. Working tree contains uncommitted M1-STUD-UI-1 frontend implementation.
+- **Current milestone:** M1-EXAM-UI-1 complete — faculty exam authoring UI (question bank manager, exam draft builder, question selector/reorder, review modal, and atomic publication).
+- **M1-EXAM-UI-1 starting commit (HEAD at start of work):** `5c6e82a` — `feat(frontend): implement student examination UI`
+- **Current HEAD:** `5c6e82a` (same as `origin/main`).
+- **Branch:** `main`, tracking `origin/main`. Working tree contains uncommitted M1-EXAM-UI-1 frontend implementation.
 
-### Uncommitted local changes (all M1-STUD-UI-1 work)
+### Uncommitted local changes (all M1-EXAM-UI-1 work)
 
 **Modified tracked files:**
-- `frontend/src/App.tsx` — mounted `/exams/available`, `/attempts/:attemptId`, and `/attempts/:attemptId/result` routes with role guards.
-- `frontend/src/pages/DashboardPage.tsx` — connected Available Exams and My Results navigation cards to `/exams/available`.
-- `frontend/src/styles/index.css` — added responsive stylesheets for examination cards, workspace split layout, question radio options, palette grid, save indicator, timer, and result breakdown.
+- `frontend/src/App.tsx` — mounted `/faculty/questions`, `/faculty/exams`, and `/faculty/exams/:examId` routes protected by role `FACULTY_ADMIN`.
+- `frontend/src/pages/DashboardPage.tsx` — connected Examinations and Question Bank navigation cards to `/faculty/exams` and `/faculty/questions`.
 - `docs/10_SETUP_AND_HANDOVER.md` — this document.
 
-**New files added in M1-STUD-UI-1:**
-- `frontend/src/api/attempts.ts` — TypeScript API client for student catalogue, attempt start/retrieval, durable answer saves with optimistic concurrency, submit, and results.
-- `frontend/src/pages/AvailableExamsPage.tsx` — student exam catalogue page (`/exams/available`).
-- `frontend/src/pages/AttemptWorkspacePage.tsx` — active exam workspace with countdown timer, question palette, and submit dialog (`/attempts/:attemptId`).
-- `frontend/src/pages/AttemptResultPage.tsx` — finalized exam results with question breakdown (`/attempts/:attemptId/result`).
+**New files added in M1-EXAM-UI-1:**
+- `frontend/src/api/faculty.ts` — TypeScript API client for topics, question bank CRUD, exam draft authoring, question attachment/reordering, and atomic publishing/unpublishing.
+- `frontend/src/pages/QuestionBankPage.tsx` — faculty question bank manager (`/faculty/questions`) with topic filters, search, create/edit modal with 2-6 options, and archive confirmation dialog.
+- `frontend/src/pages/FacultyExamsPage.tsx` — faculty examination registry and draft creation modal (`/faculty/exams`).
+- `frontend/src/pages/ExamEditorPage.tsx` — draft editor, metadata updates, question selector/reorder/remove, frozen assessment snapshot view, and atomic publishing review modal (`/faculty/exams/:examId`).
 
 ### Implemented and verified in M1-ATTEMPT-1
 
@@ -294,9 +293,9 @@ Interactive student browser-driven flows (clicking radio buttons in a live brows
 
 ### Next three tasks
 
-1. **M1-EXAM-UI-1**: Faculty exam authoring UI (question bank manager, draft builder, question selector/reorder, publish validation).
-2. **M2-OS-1**: Educational OS scheduler simulation core (abstract jobs, FCFS, Round Robin, Priority, SJF metrics).
-3. **M2-OS-UI-1**: Educational OS simulation visualizer UI.
+1. **M2-OS-1**: Educational OS scheduler simulation core (abstract jobs, FCFS, Round Robin, Priority, SJF metrics).
+2. **M2-OS-UI-1**: Educational OS simulation visualizer UI.
+3. **M3-DB-1**: Isolated database lab schema & predefined benchmark queries.
 
 ### Decisions not to re-open without a real issue
 
@@ -317,4 +316,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M1-STUD-UI-1 completion (2026-10-23)
+**Document Status:** Active — Updated after M1-EXAM-UI-1 completion (2026-10-23)

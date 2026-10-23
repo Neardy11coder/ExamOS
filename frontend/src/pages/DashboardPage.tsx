@@ -111,14 +111,14 @@ export function DashboardPage() {
     {
       icon: <BookOpen />,
       title: 'Examinations',
-      description: 'Create, publish and manage exams.',
-      comingSoon: true,
+      description: 'Create, author drafts, and publish exams.',
+      href: '/faculty/exams',
     },
     {
       icon: <ClipboardList />,
       title: 'Question Bank',
-      description: 'Author and organise MCQ questions.',
-      comingSoon: true,
+      description: 'Author, edit, and organize MCQ questions.',
+      href: '/faculty/questions',
     },
     {
       icon: <Activity />,
