@@ -1,6 +1,6 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 0.6 · **Status:** M2-OS-1 Complete — Educational OS Scheduler Simulation Core
+**Version:** 0.7 · **Status:** M2-OS-UI-1 Complete — Visual CPU Scheduling Simulator
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
@@ -289,32 +289,36 @@ Automated browser driver tests (e.g. Playwright / Selenium CI suites) remain **N
 | `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container healthy on `127.0.0.1:5433` | 2026-10-16 |
 | `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages installed | 2026-10-16 |
 | `pytest backend\tests\test_scheduler.py -v` | Python 3.11.9, venv | **20 passed, 1 warning (external)** | 2026-10-23 |
-| `pytest backend\tests\ -q` | Python 3.11.9, venv | **209 passed, 1 warning (external)** | 2026-10-23 |
+| `pytest backend\tests\test_scheduler_api.py -v` | Python 3.11.9, venv | **6 passed, 1 warning (external)** | 2026-10-23 |
+| `pytest backend\tests\ -q` | Python 3.11.9, venv | **215 passed, 1 warning (external)** | 2026-10-23 |
 | `alembic current` (from `backend/`) | Python 3.11.9, venv | `f5a2b3c4d5e6 (head)` on dev database `examos` | 2026-10-21 |
 | `python -m app.commands.seed_topics --db-url ...` (from `backend/`) | Python 3.11.9, venv | Seeded 8 taxonomy topics; idempotent | 2026-10-21 |
 | `python -m app.commands.bootstrap_faculty` | Python 3.11.9, venv | Provisioned `FACULTY_ADMIN`; idempotent | 2026-10-16 |
 | `npm run build` (from `frontend/`) | Node.js LTS, Vite 5.4.21 | Exit 0; 0 errors, 0 warnings | 2026-10-23 |
 | `git diff --check` | Git on Windows | Exit 0 | 2026-10-23 |
 
-### Milestone M2-OS-1: Educational OS Scheduler Simulation Core Verified
+### Milestone M2-OS-UI-1: Visual CPU Scheduling Simulator Verified
 
-- Implemented pure scheduling simulation service in `backend/app/services/scheduler_service.py` and schemas in `backend/app/schemas/scheduler.py`.
-- Algorithms implemented and verified:
-  - **FCFS**: Non-preemptive, earliest arrival time first; tie-breaking by input order. Explicit idle intervals when ready queue is empty.
-  - **SJF**: Non-preemptive, shortest burst time first among ready jobs; tie-breaking by arrival time, then input order.
-  - **Priority Scheduling**: Non-preemptive; lowest numeric value indicates highest priority; tie-breaking by arrival time, then input order.
-  - **Round Robin**: Preemptive with configurable positive integer quantum. At time-slice boundary, newly arrived jobs enter the ready queue in input order before the running job is re-enqueued at the tail.
-- Timeline and metric definitions:
-  - Start time ($T_{start}$), Completion time ($C$), Turnaround time ($TAT = C - A$), Waiting time ($WT = TAT - B$), Response time ($RT = T_{start} - A$).
-  - CPU Utilization: $100 \times \frac{\sum B}{\text{measurement\_window}}$ where $\text{measurement\_window} = C_{latest} - A_{earliest}$.
-  - Throughput: $\frac{N}{\text{measurement\_window}}$.
-  - Chronological timeline with explicit `{job_id: null, kind: "IDLE"}` intervals.
-- Passed all 3 reference cases from `docs/06_OS_SCHEDULING_SIMULATOR.md` §7 and comprehensive boundary/invariant tests.
+- **Backend Integration:**
+  - Route: `POST /api/v1/scheduler/simulate` in `backend/app/api/v1/endpoints/scheduler.py`.
+  - Protected with `require_faculty` (`FACULTY_ADMIN` only) and `validate_csrf` (double-submit cookie & header).
+  - Delegates to `scheduler_service.py` pure simulation engine; validates job inputs, quantum, and algorithm.
+  - Returns 422 with structured field-level error detail on invalid scheduling inputs.
+- **Frontend Visualizer UI:**
+  - Route: `/faculty/os-scheduler` in `frontend/src/pages/SchedulerSimulatorPage.tsx`, protected with `ProtectedRoute role="FACULTY_ADMIN"`.
+  - Enabled faculty dashboard navigation card for "OS Scheduling Simulator".
+  - Interactive job table editor supporting up to 50 jobs with dynamic add/remove, ID, arrival time, burst duration, and conditional priority inputs.
+  - Preloaded editable preset cases (Case A FCFS + Idle, Case B Round Robin Q=2, Case C Priority, and SJF).
+  - Configurable time quantum for Round Robin with validation.
+  - Interactive Gantt timeline schedule with distinct CPU idle blocks, start/end timestamps, duration indicators, and color-coded job legend.
+  - Comprehensive aggregate statistics: Average Waiting Time, Average Turnaround Time, Average Response Time, CPU Utilization (%), and Throughput (jobs/unit).
+  - Detailed per-job metrics table showing Arrival, Burst, Priority, First Start, Completion, Turnaround, Waiting, and Response times.
+  - Clear educational disclosure banner stating simulation of abstract jobs with zero context-switch overhead.
 
 ### Next three tasks
 
-1. **M2-OS-UI-1**: Educational OS simulation visualizer UI (Gantt chart, algorithm selector, job list editor, metrics table).
-2. **M3-DB-1**: Isolated database lab schema & predefined benchmark queries.
+1. **M3-DB-1**: Isolated database lab schema & predefined benchmark queries.
+2. **M3-DB-UI-1**: Database performance benchmark lab visualizer UI.
 3. **M4-ML-1**: ML topic classification service & fallback.
 
 ### Decisions not to re-open without a real issue

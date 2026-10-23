@@ -130,7 +130,7 @@ export function DashboardPage() {
       icon: <Settings />,
       title: 'OS Scheduling Simulator',
       description: 'Run scheduling algorithm simulations.',
-      comingSoon: true,
+      href: '/faculty/os-scheduler',
     },
   ];
 

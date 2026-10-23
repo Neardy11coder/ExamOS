@@ -23,6 +23,7 @@ import { AttemptResultPage } from './pages/AttemptResultPage';
 import { QuestionBankPage } from './pages/QuestionBankPage';
 import { FacultyExamsPage } from './pages/FacultyExamsPage';
 import { ExamEditorPage } from './pages/ExamEditorPage';
+import { SchedulerSimulatorPage } from './pages/SchedulerSimulatorPage';
 import { LoadingSpinner } from './components/ui';
 
 /**
@@ -147,6 +148,14 @@ export function App() {
         element={
           <ProtectedRoute role="FACULTY_ADMIN">
             <ExamEditorPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/faculty/os-scheduler"
+        element={
+          <ProtectedRoute role="FACULTY_ADMIN">
+            <SchedulerSimulatorPage />
           </ProtectedRoute>
         }
       />
