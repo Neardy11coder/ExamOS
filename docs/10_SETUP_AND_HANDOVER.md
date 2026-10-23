@@ -478,7 +478,7 @@ Completed live demonstration preparation and comprehensive viva material:
    - Database Performance Lab: parameterized read-only queries on `examos_lab`, active scale checks, and real `EXPLAIN ANALYZE` comparisons.
 2. **Viva Preparation Guide**: Comprehensive questions and answers covering modular monolith architecture, JWT/CSRF security, row-level locking (`with_for_update`), optimistic answer revision counters, ACID guarantees, B-Tree index selectivity trade-offs, and TF-IDF/Logistic Regression evaluation.
 3. **Demo Script Validation**: Updated [`docs/11_DEMO_AND_VIVA.md`](./11_DEMO_AND_VIVA.md) referencing the detailed live runbook.
-4. **Verification**: Pre-demo checklist validated; full backend test suite passes (271 passed); frontend production build clean.
+4. **Verification**: Pre-demo checklist validated; full backend test suite passes (271 passed); frontend production build clean. Manual browser rehearsal completed (2026-10-24) confirming: ML LOW_CONFIDENCE fallback and manual topic selection on `/faculty/questions`; exam publication on `/faculty/exams`; student attempt with autosave, submission, and 100% result on `/attempts/{id}/result`; FCFS/SJF/RR/Priority Gantt charts on `/faculty/os-scheduler`; Database Lab medium-scale (1,000 students) benchmark comparison on `/faculty/database-lab`.
 
 ### Next task
 
@@ -503,4 +503,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M6-DEMO-PREP completion (2026-10-24, manual browser rehearsal pending)
+**Document Status:** Active — Updated after M6-DEMO-PREP completion (2026-10-24, manual browser rehearsal complete)

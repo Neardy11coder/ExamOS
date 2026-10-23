@@ -136,3 +136,12 @@ Commands verified during M6-DEMO-PREP:
 4. Git whitespace check: `git diff --check` -> Clean.
 5. ML artifact check: `ml/artifacts/topic_classifier.joblib` present and verified.
 6. CLI Seed commands: `seed_topics`, `seed_lab_dataset`, `bootstrap_faculty` importable and verified.
+
+Manual browser rehearsal completed (2026-10-24):
+7. `/faculty/questions`: ML topic suggestion returned `LOW_CONFIDENCE` fallback message. Manual topic selection worked; fallback cleared after topic change; question saved.
+8. `/faculty/exams`: OS examination published successfully.
+9. `/exams/available`: Published exam visible to student.
+10. `/attempts/{id}`: Answer selection showed Saved indicator and 100% completion.
+11. `/attempts/{id}/result`: Submission completed; result showed 1/1 correct, 100.0%.
+12. `/faculty/os-scheduler`: FCFS, SJF, Round Robin, and Priority screens rendered Gantt charts and process metrics.
+13. `/faculty/database-lab`: Active dataset scale showed Medium (1,000 students, 4,000 enrollments). Benchmark comparison results and dataset-scale mismatch warnings visible.

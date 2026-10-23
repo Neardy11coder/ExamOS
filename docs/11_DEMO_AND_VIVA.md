@@ -4,7 +4,7 @@
 **Purpose:** Present the project's working behavior and explain the OS, DBMS and ML concepts accurately.
 **Runbook:** See also [DEMO_RUNBOOK_AND_VIVA_GUIDE.md](./DEMO_RUNBOOK_AND_VIVA_GUIDE.md) for the detailed minute-by-minute execution runbook.
 
-> All scenarios in this document have been verified with automated tests (271 passed, frontend production build clean). Manual browser rehearsal of the full demo sequence is still pending and should be completed before presentation.
+> All scenarios in this document have been verified with automated tests (271 passed, frontend production build clean) and confirmed via manual browser rehearsal of the full demo sequence (2026-10-24).
 
 ## 1. Suggested 8–10 minute demo sequence
 
@@ -153,4 +153,4 @@ Not in this version. They are deterministic statistics calculated from finalized
 
 Do not claim ExamOS is production-grade, immune to every network failure, kernel-level process scheduling, real-time expiry regardless of backend activity, faster indexed execution in every case, or a high-accuracy ML system unless evidence proves each claim. The project is stronger when its guarantees and limitations are stated precisely.
 
-**Document Status:** Active — Updated for M6-DEMO-PREP (2026-10-24). Automated verification complete; manual browser rehearsal pending.
+**Document Status:** Active — Updated for M6-DEMO-PREP (2026-10-24). Automated and manual browser verification complete.
