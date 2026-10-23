@@ -39,9 +39,19 @@ class DatasetSizeOption(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ActiveDatasetStatus(BaseModel):
+    detected_scale: str = Field(..., description="Detected scale: small, medium, large, inconsistent, or empty")
+    is_consistent: bool = Field(..., description="True if paired tables have matching row counts")
+    counts: dict[str, int] = Field(..., description="Actual row counts across all 4 lab tables")
+    description: str = Field(..., description="Human-readable description of active dataset state")
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class BenchmarkCatalogResponse(BaseModel):
     scenarios: list[BenchmarkScenarioSummary] = Field(..., description="Approved benchmark scenarios")
     dataset_sizes: list[DatasetSizeOption] = Field(..., description="Available dataset sizes")
+    active_dataset: ActiveDatasetStatus = Field(..., description="Actual active dataset state in examos_lab")
 
     model_config = ConfigDict(extra="forbid")
 

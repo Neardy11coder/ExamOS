@@ -37,6 +37,7 @@ def run_seed_lab_dataset(
             print(f"  - Size: {stats['dataset_size']} (Seed: {stats['seed']})")
             print(f"  - Students: {stats['student_count']} rows in both lab_students_no_index & lab_students_indexed")
             print(f"  - Enrollments: {stats['enrollment_count']} rows in both lab_enrollments_no_index & lab_enrollments_indexed")
+            print("  - PostgreSQL statistics successfully refreshed via ANALYZE.")
         return 0
     finally:
         engine.dispose()

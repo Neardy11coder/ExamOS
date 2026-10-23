@@ -18,10 +18,16 @@ from sqlalchemy.orm import Session
 from app.models.benchmark import BenchmarkRun
 from app.services.benchmark_catalog import BENCHMARK_SCENARIOS, DATASET_SIZES
 from app.services.benchmark_service import (
+    BenchmarkExecutionError,
+    BenchmarkScaleMismatchError,
     BenchmarkValidationError,
     execute_approved_benchmark,
 )
-from app.services.lab_data_service import get_lab_dataset_status, seed_lab_dataset
+from app.services.lab_data_service import (
+    get_lab_dataset_status,
+    inspect_active_lab_dataset,
+    seed_lab_dataset,
+)
 
 
 # ==============================================================================
@@ -208,3 +214,29 @@ def test_benchmark_validation_rejects_invalid_size(test_db_session: Session):
             dataset_size="enormous_invalid_size",
         )
     assert "Dataset size" in str(exc.value)
+
+
+def test_inspect_active_lab_dataset_detection(test_db_session: Session):
+    """Detects small scale and reports consistency accurately."""
+    stats = seed_lab_dataset(test_db_session, size="small", seed=42)
+    assert stats["analyzed"] is True
+
+    status = inspect_active_lab_dataset(test_db_session)
+    assert status["detected_scale"] == "small"
+    assert status["is_consistent"] is True
+    assert status["counts"]["students_indexed"] == 100
+    assert status["counts"]["enrollments_indexed"] == 400
+
+
+def test_benchmark_rejects_scale_mismatch(test_db_session: Session):
+    """Rejects execution when requested scale does not match actual active database rows."""
+    seed_lab_dataset(test_db_session, size="small", seed=42)
+
+    with pytest.raises(BenchmarkScaleMismatchError) as exc:
+        execute_approved_benchmark(
+            db=test_db_session,
+            scenario_id="selective_lookup",
+            dataset_size="medium",  # Database only has small
+        )
+    assert "Active lab dataset scale mismatch" in str(exc.value)
+    assert "requested 'medium', but the database currently contains 'small'" in str(exc.value)

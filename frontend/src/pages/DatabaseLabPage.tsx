@@ -327,9 +327,27 @@ export function DatabaseLabPage() {
 
                   {/* Dataset scale selection */}
                   <div>
-                    <label htmlFor="dataset-size-select" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.375rem' }}>
-                      Dataset Scale in examos_lab
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.375rem' }}>
+                      <label htmlFor="dataset-size-select" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                        Target Benchmark Scale
+                      </label>
+                      {catalog?.active_dataset && (
+                        <span style={{
+                          fontSize: '0.75rem',
+                          padding: '0.125rem 0.375rem',
+                          borderRadius: '4px',
+                          fontWeight: 600,
+                          background: catalog.active_dataset.detected_scale === selectedSize
+                            ? 'var(--color-success-bg)'
+                            : 'rgba(251, 191, 36, 0.15)',
+                          color: catalog.active_dataset.detected_scale === selectedSize
+                            ? 'var(--color-success)'
+                            : '#fbbf24',
+                        }}>
+                          Active DB: {catalog.active_dataset.detected_scale}
+                        </span>
+                      )}
+                    </div>
                     <select
                       id="dataset-size-select"
                       className="input"
@@ -344,6 +362,30 @@ export function DatabaseLabPage() {
                         </option>
                       ))}
                     </select>
+
+                    {/* Active database scale detail & mismatch alert */}
+                    {catalog?.active_dataset && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+                        <div>
+                          <strong>Verified Rows:</strong> {catalog.active_dataset.counts.students_indexed} students, {catalog.active_dataset.counts.enrollments_indexed} enrollments.
+                        </div>
+                        {catalog.active_dataset.detected_scale !== selectedSize && (
+                          <div style={{
+                            marginTop: '0.375rem',
+                            padding: '0.5rem',
+                            borderRadius: '0.375rem',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.25)',
+                            color: '#fca5a5',
+                          }}>
+                            <strong>Scale Mismatch:</strong> Selected target is <em>{selectedSize}</em>, but PostgreSQL currently holds <em>{catalog.active_dataset.detected_scale}</em> data. Please run:
+                            <code style={{ display: 'block', marginTop: '0.25rem', padding: '0.25rem', background: '#020617', borderRadius: '4px', color: '#818cf8', fontFamily: 'monospace' }}>
+                              python -m app.commands.seed_lab_dataset --size {selectedSize}
+                            </code>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Seed and Repetitions */}

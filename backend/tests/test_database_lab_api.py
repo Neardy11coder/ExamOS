@@ -45,6 +45,9 @@ def test_get_benchmark_catalog_faculty_success(client: TestClient, test_db_sessi
 
     assert "scenarios" in data
     assert "dataset_sizes" in data
+    assert "active_dataset" in data
+    assert "detected_scale" in data["active_dataset"]
+    assert "counts" in data["active_dataset"]
     scenarios = {s["scenario_id"]: s for s in data["scenarios"]}
     assert "selective_lookup" in scenarios
     assert "join_students_enrollments" in scenarios
@@ -53,6 +56,34 @@ def test_get_benchmark_catalog_faculty_success(client: TestClient, test_db_sessi
     sizes = {s["size_key"]: s for s in data["dataset_sizes"]}
     assert "small" in sizes
     assert "medium" in sizes
+
+
+def test_run_benchmark_scale_mismatch_returns_409(client: TestClient, test_db_session: Session):
+    """POST /labs/db/benchmarks/run returns HTTP 409 DATASET_SCALE_MISMATCH on size mismatch."""
+    seed_lab_dataset(test_db_session, size="small", seed=42)
+
+    faculty = create_test_user(test_db_session, role="FACULTY_ADMIN")
+    cookies, headers = auth_cookies_and_headers(faculty)
+
+    payload = {
+        "scenario_id": "selective_lookup",
+        "dataset_size": "medium",  # DB has small
+        "seed": 42,
+        "repetitions": 2,
+    }
+
+    resp = client.post(
+        "/api/v1/labs/db/benchmarks/run",
+        json=payload,
+        cookies=cookies,
+        headers=headers,
+    )
+    assert resp.status_code == 409
+    body = resp.json()
+    assert body["error"]["code"] == "DATASET_SCALE_MISMATCH"
+    assert "requested 'medium', but the database currently contains 'small'" in body["error"]["message"]
+    assert body["error"]["details"]["requested_scale"] == "medium"
+    assert body["error"]["details"]["detected_scale"] == "small"
 
 
 def test_run_benchmark_csrf_enforcement(client: TestClient, test_db_session: Session):

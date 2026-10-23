@@ -23,6 +23,7 @@ from app.core.deps import get_db, require_faculty, validate_csrf
 from app.models.benchmark import BenchmarkRun
 from app.models.user import User
 from app.schemas.database_lab import (
+    ActiveDatasetStatus,
     BenchmarkCatalogResponse,
     BenchmarkExecutionResponse,
     BenchmarkRunHistoryItem,
@@ -34,9 +35,11 @@ from app.schemas.database_lab import (
 from app.services.benchmark_catalog import BENCHMARK_SCENARIOS, DATASET_SIZES
 from app.services.benchmark_service import (
     BenchmarkExecutionError,
+    BenchmarkScaleMismatchError,
     BenchmarkValidationError,
     execute_approved_benchmark,
 )
+from app.services.lab_data_service import inspect_active_lab_dataset
 
 router = APIRouter(prefix="/labs/db", tags=["database-lab"])
 
@@ -48,11 +51,13 @@ router = APIRouter(prefix="/labs/db", tags=["database-lab"])
 )
 def get_benchmark_catalog(
     current_user: Annotated[User, Depends(require_faculty)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> BenchmarkCatalogResponse:
-    """List approved benchmark scenarios and dataset scales.
+    """List approved benchmark scenarios, dataset scales, and active lab dataset status.
 
     Faculty/admin only.
     Returns scenarios with descriptions, learning objectives, table references, and default parameters.
+    Returns active dataset scale and actual table row counts.
     Does not expose arbitrary executable SQL.
     """
     scenarios: list[BenchmarkScenarioSummary] = [
@@ -80,9 +85,18 @@ def get_benchmark_catalog(
         for k, v in DATASET_SIZES.items()
     ]
 
+    active_info = inspect_active_lab_dataset(db)
+    active_dataset = ActiveDatasetStatus(
+        detected_scale=active_info["detected_scale"],
+        is_consistent=active_info["is_consistent"],
+        counts=active_info["counts"],
+        description=active_info["description"],
+    )
+
     return BenchmarkCatalogResponse(
         scenarios=scenarios,
         dataset_sizes=dataset_sizes,
+        active_dataset=active_dataset,
     )
 
 
@@ -111,6 +125,22 @@ def run_benchmark(
             seed=request.seed,
             repetitions=request.repetitions,
             custom_parameters=request.custom_parameters,
+        )
+    except BenchmarkScaleMismatchError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error": {
+                    "code": "DATASET_SCALE_MISMATCH",
+                    "message": str(e),
+                    "details": {
+                        "requested_scale": e.requested_size,
+                        "detected_scale": e.active_status.get("detected_scale"),
+                        "is_consistent": e.active_status.get("is_consistent"),
+                        "counts": e.active_status.get("counts"),
+                    },
+                }
+            },
         )
     except BenchmarkValidationError as e:
         raise HTTPException(

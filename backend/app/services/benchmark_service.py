@@ -27,6 +27,22 @@ class BenchmarkValidationError(ValueError):
     pass
 
 
+class BenchmarkScaleMismatchError(ValueError):
+    """Raised when the requested dataset size does not match the active lab data."""
+    def __init__(self, requested_size: str, active_status: dict[str, Any]):
+        self.requested_size = requested_size
+        self.active_status = active_status
+        detected = active_status.get("detected_scale", "unknown")
+        counts = active_status.get("counts", {})
+        msg = (
+            f"Active lab dataset scale mismatch: requested '{requested_size}', but the database currently "
+            f"contains '{detected}' ({counts.get('students_indexed', 0)} students, "
+            f"{counts.get('enrollments_indexed', 0)} enrollments). "
+            f"Use 'python -m app.commands.seed_lab_dataset --size {requested_size}' to load the requested dataset."
+        )
+        super().__init__(msg)
+
+
 class BenchmarkExecutionError(RuntimeError):
     """Raised when benchmark query execution fails."""
     pass
@@ -84,6 +100,13 @@ def execute_approved_benchmark(
 
     if repetitions < 1 or repetitions > 10:
         raise BenchmarkValidationError("Repetitions must be an integer between 1 and 10.")
+
+    # 1b. Verify active lab dataset scale matches requested scale
+    from app.services.lab_data_service import inspect_active_lab_dataset
+
+    active_status = inspect_active_lab_dataset(db)
+    if active_status.get("detected_scale") != dataset_size:
+        raise BenchmarkScaleMismatchError(requested_size=dataset_size, active_status=active_status)
 
     scenario = BENCHMARK_SCENARIOS[scenario_id]
 

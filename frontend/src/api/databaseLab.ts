@@ -31,9 +31,22 @@ export interface DatasetSizeOption {
   enrollments_per_student: number;
 }
 
+export interface ActiveDatasetStatus {
+  detected_scale: string;
+  is_consistent: boolean;
+  counts: {
+    students_no_index: number;
+    students_indexed: number;
+    enrollments_no_index: number;
+    enrollments_indexed: number;
+  };
+  description: string;
+}
+
 export interface BenchmarkCatalogResponse {
   scenarios: BenchmarkScenarioSummary[];
   dataset_sizes: DatasetSizeOption[];
+  active_dataset: ActiveDatasetStatus;
 }
 
 export interface BenchmarkRunRequest {

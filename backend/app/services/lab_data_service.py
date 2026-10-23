@@ -140,6 +140,16 @@ def seed_lab_dataset(
 
     db.commit()
 
+    # 5. Explicitly refresh PostgreSQL statistics on all 4 lab tables
+    try:
+        db.execute(text("ANALYZE examos_lab.lab_students_no_index"))
+        db.execute(text("ANALYZE examos_lab.lab_students_indexed"))
+        db.execute(text("ANALYZE examos_lab.lab_enrollments_no_index"))
+        db.execute(text("ANALYZE examos_lab.lab_enrollments_indexed"))
+        db.commit()
+    except Exception as e:
+        raise RuntimeError(f"Failed to refresh PostgreSQL statistics on examos_lab tables: {e}") from e
+
     return {
         "dataset_size": size,
         "seed": seed,
@@ -149,6 +159,7 @@ def seed_lab_dataset(
         "students_indexed_rows": len(students_data),
         "enrollments_no_index_rows": len(enrollments_data),
         "enrollments_indexed_rows": len(enrollments_data),
+        "analyzed": True,
     }
 
 
@@ -164,4 +175,71 @@ def get_lab_dataset_status(db: Session) -> dict[str, int]:
         "students_indexed": res_s_idx,
         "enrollments_no_index": res_e_no,
         "enrollments_indexed": res_e_idx,
+    }
+
+
+def inspect_active_lab_dataset(db: Session) -> dict[str, Any]:
+    """Inspect actual row counts and classify the active dataset scale.
+
+    Returns:
+        {
+            "detected_scale": "small" | "medium" | "large" | "inconsistent" | "empty",
+            "is_consistent": bool,
+            "counts": {
+                "students_no_index": int,
+                "students_indexed": int,
+                "enrollments_no_index": int,
+                "enrollments_indexed": int,
+            },
+            "description": str,
+        }
+    """
+    counts = get_lab_dataset_status(db)
+    s_no = counts["students_no_index"]
+    s_idx = counts["students_indexed"]
+    e_no = counts["enrollments_no_index"]
+    e_idx = counts["enrollments_indexed"]
+
+    if s_no == 0 and s_idx == 0 and e_no == 0 and e_idx == 0:
+        return {
+            "detected_scale": "empty",
+            "is_consistent": True,
+            "counts": counts,
+            "description": "Lab tables are empty. Please seed an initial dataset.",
+        }
+
+    # Paired parity check
+    if s_no != s_idx or e_no != e_idx:
+        return {
+            "detected_scale": "inconsistent",
+            "is_consistent": False,
+            "counts": counts,
+            "description": (
+                f"Paired tables have mismatched row counts (students: {s_no} vs {s_idx}, "
+                f"enrollments: {e_no} vs {e_idx}). Reseeding is required."
+            ),
+        }
+
+    # Match against documented standard sizes
+    matched_scale: str | None = None
+    for scale_key, spec in DATASET_SIZES.items():
+        expected_students = spec["student_count"]
+        expected_enrollments = expected_students * spec["enrollments_per_student"]
+        if s_no == expected_students and e_no == expected_enrollments:
+            matched_scale = scale_key
+            break
+
+    if matched_scale:
+        return {
+            "detected_scale": matched_scale,
+            "is_consistent": True,
+            "counts": counts,
+            "description": f"Active dataset verified as '{matched_scale}' ({s_no} students, {e_no} enrollments).",
+        }
+
+    return {
+        "detected_scale": "unknown",
+        "is_consistent": False,
+        "counts": counts,
+        "description": f"Row counts ({s_no} students, {e_no} enrollments) do not match any standard catalog scale.",
     }

@@ -347,8 +347,14 @@ Automated browser driver tests (e.g. Playwright / Selenium CI suites) remain **N
   - Audit history tab allowing inspection of past benchmark runs.
   - Clear real-measurement notice explaining cache warmup and server load variations.
 - **Verification Results:**
-  - Backend tests: 233 passing tests (18 lab tests across `test_database_lab.py` and `test_database_lab_api.py`), 0 failures, 1 warning.
+  - Backend tests: 236 passing tests (21 lab tests across `test_database_lab.py` and `test_database_lab_api.py`), 0 failures, 1 warning.
   - Frontend build: `npm run build` succeeds cleanly with zero TypeScript errors.
+- **Active Dataset Scale & Reliability Hardening:**
+  - Added `inspect_active_lab_dataset()` in `lab_data_service.py` to count rows across all four paired tables and classify active scale (`small`, `medium`, `large`, `inconsistent`, `empty`).
+  - Catalog endpoint `GET /api/v1/labs/db/benchmarks` surfaces `active_dataset` object with verified table row counts and detected scale.
+  - Benchmark execution `POST /api/v1/labs/db/benchmarks/run` validates that requested scale matches verified active data before running queries. Rejects scale mismatch with HTTP 409 `DATASET_SCALE_MISMATCH`.
+  - Added explicit PostgreSQL `ANALYZE` commands on all four lab tables at the conclusion of `seed_lab_dataset()` to guarantee immediate statistics availability for query plan costing.
+  - Updated frontend `DatabaseLabPage.tsx` to display active database scale, row counts, and clear operator CLI instructions when target scale differs from database state.
 
 ### Next three tasks
 
