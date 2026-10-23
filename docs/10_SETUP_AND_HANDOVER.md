@@ -1,6 +1,6 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 0.7 · **Status:** M2-OS-UI-1 Complete — Visual CPU Scheduling Simulator
+**Version:** 0.8 · **Status:** M3-DB-1 Complete — Isolated Database Lab Foundation
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
@@ -315,11 +315,22 @@ Automated browser driver tests (e.g. Playwright / Selenium CI suites) remain **N
   - Detailed per-job metrics table showing Arrival, Burst, Priority, First Start, Completion, Turnaround, Waiting, and Response times.
   - Clear educational disclosure banner stating simulation of abstract jobs with zero context-switch overhead.
 
+### Milestone M3-DB-1: Isolated Database Lab Foundation Verified
+
+- **Migration** `a7b8c9d0e1f2` creates `public.benchmark_runs`, `examos_lab` schema, and 4 paired lab tables (`lab_students_no_index`, `lab_students_indexed`, `lab_enrollments_no_index`, `lab_enrollments_indexed`). Migration is self-contained: `CREATE SCHEMA IF NOT EXISTS examos_lab` and least-privilege GRANTs to `examos_app`/`examos_test_runner` are included.
+- **Least-privilege boundary**: `examos_migrator` owns DDL; `examos_app`/`examos_test_runner` have only `SELECT, INSERT, UPDATE, DELETE`. Lab tables are fully isolated from live exam tables in the public schema.
+- **Benchmark catalog** (`benchmark_catalog.py`): 3 approved scenarios — `SELECTIVE_LOOKUP`, `JOIN`, `AGGREGATION` — each paired across `NO_INDEX` and `INDEXED` variants. No raw SQL accepted from UI input.
+- **Seeding** (`lab_data_service.py`): Deterministic `seed=42` generator; `small` = 100 students / 400 enrollments; `DELETE` used instead of `TRUNCATE` to respect least-privilege grants. Seeding is idempotent.
+- **Benchmark runner** (`benchmark_service.py`): Executes `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` on fixed parameterised queries. Never runs arbitrary user SQL.
+- **CLI seed command**: `python -m app.commands.seed_lab_dataset --size small --seed 42`.
+- **Applied to test DB**: Migration applied to `examos_test` via `-x url=TEST_DATABASE_URL`. All lab tables and grants verified on test DB.
+- **Tests**: 11 focused lab tests (`tests/test_database_lab.py`), 226 total tests — all pass.
+
 ### Next three tasks
 
-1. **M3-DB-1**: Isolated database lab schema & predefined benchmark queries.
-2. **M3-DB-UI-1**: Database performance benchmark lab visualizer UI.
-3. **M4-ML-1**: ML topic classification service & fallback.
+1. **M3-DB-UI-1**: Database performance benchmark lab visualizer UI.
+2. **M4-ML-1**: ML topic classification service & fallback.
+3. **M4-ML-UI-1**: ML suggestions display in question authoring.
 
 ### Decisions not to re-open without a real issue
 
@@ -340,4 +351,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M1-EXAM-UI-1 completion (2026-10-23)
+**Document Status:** Active — Updated after M3-DB-1 completion (2026-10-23)
