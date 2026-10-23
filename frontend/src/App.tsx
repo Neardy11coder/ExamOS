@@ -17,6 +17,9 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { AvailableExamsPage } from './pages/AvailableExamsPage';
+import { AttemptWorkspacePage } from './pages/AttemptWorkspacePage';
+import { AttemptResultPage } from './pages/AttemptResultPage';
 import { LoadingSpinner } from './components/ui';
 
 /**
@@ -89,6 +92,32 @@ export function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Student examination routes (M1-STUD-UI-1) */}
+      <Route
+        path="/exams/available"
+        element={
+          <ProtectedRoute role="STUDENT">
+            <AvailableExamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/attempts/:attemptId"
+        element={
+          <ProtectedRoute role="STUDENT">
+            <AttemptWorkspacePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/attempts/:attemptId/result"
+        element={
+          <ProtectedRoute>
+            <AttemptResultPage />
           </ProtectedRoute>
         }
       />

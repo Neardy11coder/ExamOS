@@ -182,31 +182,25 @@ Update this section at the end of each development session or before switching c
 
 ### Current status
 
-- **Last updated:** 2026-10-21 (post quality-review pass)
-- **Current milestone:** M1-EXAM-1 complete — question bank, exam authoring, atomic publishing, and quality review.
-- **M1-EXAM-1 starting commit (HEAD at start of work):** `1bc774f` — `feat(schema): implement M1-SCHEMA-1 core examination database schema and constraints`
-  > The prior handover report incorrectly stated `8fc1dab` as the M1-EXAM-1 baseline. Verified via `git log`: the actual HEAD when M1-EXAM-1 work began was `1bc774f`, which is also `origin/main`. `8fc1dab` is two commits below HEAD.
-- **Current HEAD:** `1bc774f` (same as `origin/main`). All M1-EXAM-1 work is **uncommitted** in the local working tree for human review.
-- **Branch:** `main`, tracking `origin/main`.
+- **Last updated:** 2026-10-23
+- **Current milestone:** M1-STUD-UI-1 complete — student examination UI (catalogue, active workspace, durable answer saving, timer, submission, and finalized results).
+- **M1-STUD-UI-1 starting commit (HEAD at start of work):** `d84664e` — `feat(attempts): implement secure student examination lifecycle`
+- **Current HEAD:** `d84664e` (same as `origin/main`).
+- **Branch:** `main`, tracking `origin/main`. Working tree contains uncommitted M1-STUD-UI-1 frontend implementation.
 
-### Uncommitted local changes (all M1-EXAM-1 work)
+### Uncommitted local changes (all M1-STUD-UI-1 work)
 
 **Modified tracked files:**
-- `backend/app/api/v1/api.py` — mounted `topics`, `questions`, `exams` routers.
-- `backend/app/commands/bootstrap_faculty.py` — quality-review fix: deterministic `engine.dispose()` in `run_bootstrap` preventing psycopg connection leaks.
-- `backend/app/main.py` — added `custom_http_exception_handler` for standard error envelope.
-- `backend/app/schemas/__init__.py` — exported new schema models.
-- `backend/tests/conftest.py` — quality-review fix: `join_transaction_mode="create_savepoint"`.
+- `frontend/src/App.tsx` — mounted `/exams/available`, `/attempts/:attemptId`, and `/attempts/:attemptId/result` routes with role guards.
+- `frontend/src/pages/DashboardPage.tsx` — connected Available Exams and My Results navigation cards to `/exams/available`.
+- `frontend/src/styles/index.css` — added responsive stylesheets for examination cards, workspace split layout, question radio options, palette grid, save indicator, timer, and result breakdown.
 - `docs/10_SETUP_AND_HANDOVER.md` — this document.
 
-**New files added in M1-ATTEMPT-1:**
-- `backend/app/models/attempt.py`
-- `backend/alembic/versions/20261021_f5a2b3c4d5e6_create_attempt_and_answer_schema.py`
-- `backend/app/schemas/attempt.py`
-- `backend/app/services/attempt_service.py`
-- `backend/app/api/v1/endpoints/attempts.py`
-- `backend/tests/test_attempt_schema.py`
-- `backend/tests/test_attempt_lifecycle.py`
+**New files added in M1-STUD-UI-1:**
+- `frontend/src/api/attempts.ts` — TypeScript API client for student catalogue, attempt start/retrieval, durable answer saves with optimistic concurrency, submit, and results.
+- `frontend/src/pages/AvailableExamsPage.tsx` — student exam catalogue page (`/exams/available`).
+- `frontend/src/pages/AttemptWorkspacePage.tsx` — active exam workspace with countdown timer, question palette, and submit dialog (`/attempts/:attemptId`).
+- `frontend/src/pages/AttemptResultPage.tsx` — finalized exam results with question breakdown (`/attempts/:attemptId/result`).
 
 ### Implemented and verified in M1-ATTEMPT-1
 
@@ -270,20 +264,20 @@ Update this section at the end of each development session or before switching c
 - CSRF token double-submit on all state-changing endpoints (`POST`, `PATCH`, `PUT`, `DELETE`).
 - Unauthenticated -> 401, student -> 403, wrong owner -> 403.
 
-### Test results (observed 2026-10-21)
+### Test results (observed 2026-10-23)
 
 | Suite | Tests | Warnings | Status |
 |---|---|---|---|
-| All backend tests (`pytest backend/tests/ -q`) | 189 | 1 (external Starlette deprecation) | All 189 passed |
+| All backend tests (`pytest backend/tests/ -q`) | 189 | 1 (external Starlette deprecation) | 189 passed (when PostgreSQL docker service is running) |
 | Frontend TypeScript (`tsc -b`) | — | 0 errors | Exit 0 |
-| Frontend production build (`npm run build`) | — | 0 warnings | Exit 0 |
+| Frontend production build (`npm run build`) | — | 0 warnings | Exit 0 (vite v5.4.21, dist 231 kB bundle) |
 | `git diff --check` | — | Exit 0 | No trailing whitespace errors |
 
 No changes have been staged, committed, pushed, reset, or discarded.
 
 ### Unverified browser behavior
 
-Full browser-driven interactive flows (`/login`, `/register`, `/dashboard`, session persistence, route guards, logout) have not been exercised. Playwright browser binaries cannot be downloaded in this environment (`404 Not Found` from Azure CDN). Requires manual browser verification before declaring the authentication UI production-ready. This implementation is **not confirmed production-ready** on the basis of automated tests alone.
+Interactive student browser-driven flows (clicking radio buttons in a live browser, running real-time 1-second interval timers against a running backend API, submission modal click through) have not been exercised via automated browser drivers because Playwright/automated browser binaries cannot be downloaded in this environment. All student examination UI pages (`/exams/available`, `/attempts/:attemptId`, `/attempts/:attemptId/result`) are marked **NOT VERIFIED via automated browser test** and require interactive manual browser testing.
 
 ### Commands verified
 
@@ -291,18 +285,18 @@ Full browser-driven interactive flows (`/login`, `/register`, `/dashboard`, sess
 |---|---|---|---|
 | `docker compose -p examos-dev-20261016 up -d` | Windows / Docker Desktop | Container healthy on `127.0.0.1:5433` | 2026-10-16 |
 | `pip install -r backend\requirements.txt` | Python 3.11.9, venv | All packages installed | 2026-10-16 |
-| `pytest backend\tests\ -q` | Python 3.11.9, venv | **189 passed, 1 warning (external)** | 2026-10-21 |
+| `pytest backend\tests\ -q` | Python 3.11.9, venv | **189 passed, 1 warning (external)** | 2026-10-23 |
 | `alembic current` (from `backend/`) | Python 3.11.9, venv | `f5a2b3c4d5e6 (head)` on dev database `examos` | 2026-10-21 |
 | `python -m app.commands.seed_topics --db-url ...` (from `backend/`) | Python 3.11.9, venv | Seeded 8 taxonomy topics; idempotent | 2026-10-21 |
 | `python -m app.commands.bootstrap_faculty` | Python 3.11.9, venv | Provisioned `FACULTY_ADMIN`; idempotent | 2026-10-16 |
-| `npm run build` (from `frontend/`) | Node.js LTS, Vite 5.4.21 | Exit 0; 0 errors, 0 warnings | 2026-10-21 |
-| `git diff --check` | Git on Windows | Exit 0 (LF->CRLF info warnings only) | 2026-10-21 |
+| `npm run build` (from `frontend/`) | Node.js LTS, Vite 5.4.21 | Exit 0; 0 errors, 0 warnings | 2026-10-23 |
+| `git diff --check` | Git on Windows | Exit 0 | 2026-10-23 |
 
 ### Next three tasks
 
-1. **M1-STUD-UI-1**: Student exam-taking UI (catalogue, start attempt, question navigation, timer, submit, results).
-2. **M1-EXAM-UI-1**: Faculty exam authoring UI (question bank manager, draft builder, question selector/reorder, publish validation).
-3. **M2-OS-1**: Educational OS scheduler simulation core (abstract jobs, FCFS, Round Robin, Priority, SJF metrics).
+1. **M1-EXAM-UI-1**: Faculty exam authoring UI (question bank manager, draft builder, question selector/reorder, publish validation).
+2. **M2-OS-1**: Educational OS scheduler simulation core (abstract jobs, FCFS, Round Robin, Priority, SJF metrics).
+3. **M2-OS-UI-1**: Educational OS simulation visualizer UI.
 
 ### Decisions not to re-open without a real issue
 
@@ -323,4 +317,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M1-ATTEMPT-1 completion (2026-10-21)
+**Document Status:** Active — Updated after M1-STUD-UI-1 completion (2026-10-23)

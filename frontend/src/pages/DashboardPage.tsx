@@ -33,11 +33,12 @@ interface NavCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
+  href?: string;
   comingSoon?: boolean;
 }
 
-function NavCard({ icon, title, description, comingSoon }: NavCardProps) {
-  return (
+function NavCard({ icon, title, description, href, comingSoon }: NavCardProps) {
+  const content = (
     <div className={`nav-card${comingSoon ? ' nav-card--disabled' : ''}`}>
       <div className="nav-card__icon" aria-hidden="true">{icon}</div>
       <div className="nav-card__content">
@@ -47,6 +48,16 @@ function NavCard({ icon, title, description, comingSoon }: NavCardProps) {
       {comingSoon && <span className="nav-card__badge">Coming soon</span>}
     </div>
   );
+
+  if (href && !comingSoon) {
+    return (
+      <a href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+        {content}
+      </a>
+    );
+  }
+
+  return content;
 }
 
 export function DashboardPage() {
@@ -79,14 +90,14 @@ export function DashboardPage() {
     {
       icon: <BookOpen />,
       title: 'Available Exams',
-      description: 'View and start published examinations.',
-      comingSoon: true,
+      description: 'View, start, or continue published examinations.',
+      href: '/exams/available',
     },
     {
       icon: <ClipboardList />,
       title: 'My Results',
-      description: 'Review your submitted and expired attempt results.',
-      comingSoon: true,
+      description: 'Review your submitted and expired attempt results in Available Exams.',
+      href: '/exams/available',
     },
     {
       icon: <Activity />,
