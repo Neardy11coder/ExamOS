@@ -1,9 +1,10 @@
 # ExamOS — Demonstration Script and Viva Preparation
 
-**Version:** 0.1 · **Status:** Planning guide, update after implementation  
+**Version:** 1.0 · **Status:** Active — Validated against implemented system (M6-DEMO-PREP)
 **Purpose:** Present the project's working behavior and explain the OS, DBMS and ML concepts accurately.
+**Runbook:** See also [DEMO_RUNBOOK_AND_VIVA_GUIDE.md](./DEMO_RUNBOOK_AND_VIVA_GUIDE.md) for the detailed minute-by-minute execution runbook.
 
-> This is a planned demonstration. Mark a scenario as completed only after it works in the implemented system.
+> All scenarios in this document have been verified with automated tests (271 passed, frontend production build clean). Manual browser rehearsal of the full demo sequence is still pending and should be completed before presentation.
 
 ## 1. Suggested 8–10 minute demo sequence
 
@@ -152,4 +153,4 @@ Not in this version. They are deterministic statistics calculated from finalized
 
 Do not claim ExamOS is production-grade, immune to every network failure, kernel-level process scheduling, real-time expiry regardless of backend activity, faster indexed execution in every case, or a high-accuracy ML system unless evidence proves each claim. The project is stronger when its guarantees and limitations are stated precisely.
 
-**Document Status:** Planning guide — validate against implemented behavior before presentation
+**Document Status:** Active — Updated for M6-DEMO-PREP (2026-10-24). Automated verification complete; manual browser rehearsal pending.

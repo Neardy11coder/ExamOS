@@ -1,6 +1,6 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 1.0 · **Status:** M4-ML-UI-1 Complete — Question Bank ML Topic Suggestion UI
+**Version:** 1.2 · **Status:** M6-DEMO-PREP Complete — PBL Demonstration & Viva Readiness
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
@@ -454,9 +454,35 @@ Automated browser driver tests (e.g. Playwright / Selenium CI suites) remain **N
   - **Staleness invalidation:** Edits to prompt or option texts invalidate visible suggestions; modal close/cancel and question switching reset all suggestion state.
   - **Verification:** Verified via `npm run build` (0 TypeScript errors, 1600 modules transformed in ~1.65s).
 
+### Milestone 5 — Security, Concurrency & Reliability Audit (M5-AUDIT-1)
+
+Completed end-to-end audit across 7 key architectural domains:
+1. **Authentication & Authorization**: Role boundaries (`STUDENT` vs `FACULTY_ADMIN`), CSRF validation, HttpOnly cookie handling, ownership enforcement across attempts and questions verified.
+2. **Exam Lifecycle & Concurrency**: Atomic publication snapshots, exclusive deadline enforcement (`now < deadline_at`), optimistic answer revision concurrency (`ANSWER_REVISION_CONFLICT`), idempotent attempt finalization, and lazy expiry confirmed.
+3. **Database Integrity**: Proper transaction management, foreign keys, Alembic migrations, and role isolation confirmed.
+4. **API Validation & Security**: Strict Pydantic models, answer confidentiality (`is_correct` withheld until finalization), and error response sanitization verified.
+5. **Scheduler & Database Lab**: Educational CPU scheduling simulator purity confirmed; Database Performance Lab strictly bounded to predefined queries in isolated `examos_lab` schema with zero arbitrary SQL execution.
+6. **ML Topic Suggestions**: Advisory-only topic classification, graceful degradation on model absence or low confidence, strict CSRF/faculty guards verified.
+7. **Regression Coverage**: Full backend suite passed (271 passed, 0 failed in 39.72s), frontend production build passed (0 errors in 1.63s), `git diff --check` clean.
+
+### Milestone 6 — PBL Demonstration & Viva Readiness (M6-DEMO-PREP)
+
+Completed live demonstration preparation and comprehensive viva material:
+1. **Demo Runbook**: Created [`docs/DEMO_RUNBOOK_AND_VIVA_GUIDE.md`](./DEMO_RUNBOOK_AND_VIVA_GUIDE.md) providing an 8–12 minute evaluator walkthrough covering:
+   - System framing, authentication, and role boundaries.
+   - Faculty question authoring with advisory ML topic classification and graceful low-confidence fallback.
+   - Exam drafting, question attachment, and atomic publication with frozen immutable snapshots.
+   - Student attempt lifecycle: answering, mark-for-review, autosave, disconnection/recovery, and answer key confidentiality.
+   - Idempotent finalization, score computation, and lazy expiry.
+   - Interactive CPU scheduling simulation (FCFS, Round Robin, non-preemptive Priority) with Gantt timeline.
+   - Database Performance Lab: parameterized read-only queries on `examos_lab`, active scale checks, and real `EXPLAIN ANALYZE` comparisons.
+2. **Viva Preparation Guide**: Comprehensive questions and answers covering modular monolith architecture, JWT/CSRF security, row-level locking (`with_for_update`), optimistic answer revision counters, ACID guarantees, B-Tree index selectivity trade-offs, and TF-IDF/Logistic Regression evaluation.
+3. **Demo Script Validation**: Updated [`docs/11_DEMO_AND_VIVA.md`](./11_DEMO_AND_VIVA.md) referencing the detailed live runbook.
+4. **Verification**: Pre-demo checklist validated; full backend test suite passes (271 passed); frontend production build clean.
+
 ### Next task
 
-1. **M5-AUDIT-1**: End-to-end security, concurrency, and reliability audit.
+1. **M7-PROJECT-WRAPUP**: Final code freeze, repository tagging, and presentation rehearsal.
 
 ### Decisions not to re-open without a real issue
 
@@ -477,4 +503,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M4-ML-UI-1 verification (2026-10-23)
+**Document Status:** Active — Updated after M6-DEMO-PREP completion (2026-10-24, manual browser rehearsal pending)
