@@ -24,6 +24,7 @@ import { QuestionBankPage } from './pages/QuestionBankPage';
 import { FacultyExamsPage } from './pages/FacultyExamsPage';
 import { ExamEditorPage } from './pages/ExamEditorPage';
 import { SchedulerSimulatorPage } from './pages/SchedulerSimulatorPage';
+import { DatabaseLabPage } from './pages/DatabaseLabPage';
 import { LoadingSpinner } from './components/ui';
 
 /**
@@ -156,6 +157,14 @@ export function App() {
         element={
           <ProtectedRoute role="FACULTY_ADMIN">
             <SchedulerSimulatorPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/faculty/database-lab"
+        element={
+          <ProtectedRoute role="FACULTY_ADMIN">
+            <DatabaseLabPage />
           </ProtectedRoute>
         }
       />

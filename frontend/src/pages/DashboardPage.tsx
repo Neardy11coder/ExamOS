@@ -15,7 +15,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, BookOpen, ClipboardList, LogOut, Settings, User } from 'lucide-react';
+import { Activity, BookOpen, ClipboardList, Database, LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ApiError } from '../api/auth';
 import { InlineError } from '../components/ui';
@@ -131,6 +131,12 @@ export function DashboardPage() {
       title: 'OS Scheduling Simulator',
       description: 'Run scheduling algorithm simulations.',
       href: '/faculty/os-scheduler',
+    },
+    {
+      icon: <Database />,
+      title: 'Database Performance Lab',
+      description: 'Run query benchmarks on indexed vs non-indexed tables.',
+      href: '/faculty/database-lab',
     },
   ];
 

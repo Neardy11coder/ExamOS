@@ -326,11 +326,35 @@ Automated browser driver tests (e.g. Playwright / Selenium CI suites) remain **N
 - **Applied to test DB**: Migration applied to `examos_test` via `-x url=TEST_DATABASE_URL`. All lab tables and grants verified on test DB.
 - **Tests**: 11 focused lab tests (`tests/test_database_lab.py`), 226 total tests — all pass.
 
+### Milestone M3-DB-UI-1: Database Performance Benchmark Visualizer Verified
+
+- **Backend Integration:**
+  - Endpoints in `backend/app/api/v1/endpoints/database_lab.py`:
+    - `GET /api/v1/labs/db/benchmarks`: Lists approved scenarios from catalog (`selective_lookup`, `join_students_enrollments`, `aggregation_department_gpa`) and dataset scales (`small`, `medium`, `large`). Faculty/admin only (`require_faculty`).
+    - `POST /api/v1/labs/db/benchmarks/run`: Executes approved benchmarks on isolated `examos_lab` tables using `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`. Requires `FACULTY_ADMIN` role and validates CSRF (`validate_csrf`). Persists execution records to `public.benchmark_runs`. Rejects arbitrary SQL and invalid inputs.
+    - `GET /api/v1/labs/db/benchmarks/runs`: Retrieves recent benchmark execution audit history ordered by `created_at DESC`.
+    - `GET /api/v1/labs/db/benchmarks/runs/{run_id}`: Retrieves full run details, parameters, and parsed execution plans.
+  - Pydantic schemas in `backend/app/schemas/database_lab.py` and registered in `backend/app/api/v1/api.py`.
+  - Comprehensive API test suite in `backend/tests/test_database_lab_api.py` verifying 401 unauthenticated, 403 student access, CSRF validation, parameter bounds validation, execution, and history retrieval.
+- **Frontend Visualizer UI:**
+  - Route: `/faculty/database-lab` in `frontend/src/pages/DatabaseLabPage.tsx`, protected with `<ProtectedRoute role="FACULTY_ADMIN">`.
+  - Enabled faculty dashboard navigation card for "Database Performance Lab".
+  - Dedicated API client in `frontend/src/api/databaseLab.ts` with CSRF cookie handling.
+  - Benchmark scenario selector with educational descriptions, learning objectives, table references, and caveat notices.
+  - Configurable dataset scale (`small`, `medium`, `large`), reproducible random seed, and repetition controls (1–10).
+  - Side-by-side comparison of NO_INDEX (Sequential Scan) vs INDEXED (B-tree Index Scan) with actual median timings, planning times, rows scanned, and speedup ratio.
+  - Interactive EXPLAIN plan viewer with side-by-side and isolated plan tree JSON inspection.
+  - Audit history tab allowing inspection of past benchmark runs.
+  - Clear real-measurement notice explaining cache warmup and server load variations.
+- **Verification Results:**
+  - Backend tests: 233 passing tests (18 lab tests across `test_database_lab.py` and `test_database_lab_api.py`), 0 failures, 1 warning.
+  - Frontend build: `npm run build` succeeds cleanly with zero TypeScript errors.
+
 ### Next three tasks
 
-1. **M3-DB-UI-1**: Database performance benchmark lab visualizer UI.
-2. **M4-ML-1**: ML topic classification service & fallback.
-3. **M4-ML-UI-1**: ML suggestions display in question authoring.
+1. **M4-ML-1**: ML topic classification service & fallback.
+2. **M4-ML-UI-1**: ML suggestions display in question authoring.
+3. **M5-AUDIT-1**: End-to-end security, concurrency, and reliability audit.
 
 ### Decisions not to re-open without a real issue
 
@@ -351,4 +375,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Active — Updated after M3-DB-1 completion (2026-10-23)
+**Document Status:** Active — Updated after M3-DB-UI-1 completion (2026-10-23)

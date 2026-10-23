@@ -92,6 +92,15 @@ __all__ = [
     "SchedulerRunRequest",
 ]
 
+from app.schemas.database_lab import (
+    BenchmarkCatalogResponse,
+    BenchmarkExecutionResponse,
+    BenchmarkRunHistoryItem,
+    BenchmarkRunRequest,
+    BenchmarkScenarioSummary,
+    DatasetSizeOption,
+    SingleVariantExecutionData,
+)
 from app.schemas.scheduler import (
     JobInput,
     JobMetrics,
@@ -101,3 +110,13 @@ from app.schemas.scheduler import (
     TimelineSegment,
     TimelineSegmentKind,
 )
+
+__all__.extend([
+    "BenchmarkCatalogResponse",
+    "BenchmarkExecutionResponse",
+    "BenchmarkRunHistoryItem",
+    "BenchmarkRunRequest",
+    "BenchmarkScenarioSummary",
+    "DatasetSizeOption",
+    "SingleVariantExecutionData",
+])
