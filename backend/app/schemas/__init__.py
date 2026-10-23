@@ -83,4 +83,21 @@ __all__ = [
     "ResultQuestionItem",
     "AttemptResultResponse",
     "FacultyAttemptListItem",
+    "SchedulingAlgorithm",
+    "JobInput",
+    "TimelineSegmentKind",
+    "TimelineSegment",
+    "JobMetrics",
+    "ScheduleResult",
+    "SchedulerRunRequest",
 ]
+
+from app.schemas.scheduler import (
+    JobInput,
+    JobMetrics,
+    ScheduleResult,
+    SchedulerRunRequest,
+    SchedulingAlgorithm,
+    TimelineSegment,
+    TimelineSegmentKind,
+)
