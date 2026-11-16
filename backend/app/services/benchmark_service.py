@@ -118,7 +118,7 @@ def execute_approved_benchmark(
                 parameters[k] = v
 
     # 2. Query PostgreSQL version
-    pg_version_raw = db.execute(text("SELECT version()")).scalar() or "Unknown"
+    pg_version_raw = (db.execute(text("SELECT version()")).scalar() or "Unknown")[:100]
 
     # Helper function to run one variant
     def _run_variant(variant_name: str, query_template: str) -> SingleVariantResult:

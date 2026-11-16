@@ -54,9 +54,62 @@ def _get_taxonomy_codes() -> list[str]:
     return [entry["code"] for entry in TAXONOMY_TOPICS]
 
 
+class _DistilBertPipelineWrapper:
+    """Adapter wrapping a fine-tuned DistilBERT / HuggingFace or ONNX pipeline."""
+
+    def __init__(self, model: Any, tokenizer: Any, classes: list[str]):
+        self.model = model
+        self.tokenizer = tokenizer
+        self.classes_ = classes
+
+    def predict_proba(self, texts: list[str]) -> list[list[float]]:
+        import torch
+
+        self.model.eval()
+        inputs = self.tokenizer(
+            texts,
+            padding=True,
+            truncation=True,
+            max_length=128,
+            return_tensors="pt",
+        )
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            logits = outputs.logits
+            probs = torch.softmax(logits, dim=-1).tolist()
+        return probs
+
+
+def _load_distilbert_from_directory(dir_path: Path) -> Any | None:
+    """Attempt loading a fine-tuned DistilBERT model and tokenizer from directory."""
+    if not dir_path.is_dir():
+        return None
+
+    weights_file = dir_path / "model.safetensors"
+    bin_file = dir_path / "pytorch_model.bin"
+    if not (weights_file.exists() or bin_file.exists()):
+        return None
+
+    try:
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(str(dir_path))
+        model = AutoModelForSequenceClassification.from_pretrained(str(dir_path))
+        classes = [model.config.id2label[i] for i in range(len(model.config.id2label))]
+        logger.info("DistilBERT topic classifier loaded successfully from %s", dir_path)
+        return _DistilBertPipelineWrapper(model, tokenizer, classes)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Found DistilBERT directory but failed to load: %s", type(exc).__name__)
+        return None
+
+
 def _load_pipeline() -> Any | None:
     """
-    Load the joblib pipeline artifact once and cache it.
+    Load the topic classifier artifact once and cache it.
+    Supports:
+      1. DistilBERT fine-tuned model directory (PyTorch / Safetensors)
+      2. Scikit-learn Pipeline artifact (.joblib)
+      3. Fallback path if configured
 
     - Returns None when the artifact is absent or fails to load.
     - Returns None when the loaded model's classes are incompatible with the
@@ -69,41 +122,60 @@ def _load_pipeline() -> Any | None:
 
     _pipeline_load_attempted = True
 
-    raw_path = settings.ML_MODEL_PATH
-    artifact_path = Path(raw_path)
-    if not artifact_path.is_absolute():
-        backend_dir = Path(__file__).resolve().parents[2]
-        artifact_path = (backend_dir / artifact_path).resolve()
+    backend_dir = Path(__file__).resolve().parents[2]
 
-    if not artifact_path.is_file():
+    # Candidate paths to inspect in order
+    candidate_raw_paths = [settings.ML_MODEL_PATH]
+    fallback_path = getattr(settings, "ML_FALLBACK_MODEL_PATH", None)
+    if fallback_path:
+        candidate_raw_paths.append(fallback_path)
+
+    loaded = None
+    for raw_path in candidate_raw_paths:
+        if not raw_path:
+            continue
+        artifact_path = Path(raw_path)
+        if not artifact_path.is_absolute():
+            artifact_path = (backend_dir / artifact_path).resolve()
+
+        # Check 1: Directory with DistilBERT model
+        if artifact_path.is_dir():
+            distilbert_wrapper = _load_distilbert_from_directory(artifact_path)
+            if distilbert_wrapper is not None:
+                loaded = distilbert_wrapper
+                break
+
+        # Check 2: Single-file artifact (.joblib)
+        elif artifact_path.is_file():
+            try:
+                import joblib  # type: ignore[import-untyped]
+                loaded = joblib.load(artifact_path)
+                logger.info("Loaded baseline ML pipeline from %s", artifact_path)
+                break
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Failed to load artifact %s: %s", artifact_path, type(exc).__name__)
+
+    if loaded is None:
         logger.warning(
-            "ML model artifact not found. Topic suggestions will be unavailable."
+            "No usable ML topic model artifact found (tried: %s). Topic suggestions will be unavailable.",
+            candidate_raw_paths,
         )
         return None
 
-    try:
-        import joblib  # type: ignore[import-untyped]
-
-        loaded = joblib.load(artifact_path)
-
-        # Guard: model must contain all current taxonomy classes
-        taxonomy_codes = set(_get_taxonomy_codes())
-        model_classes = set(getattr(loaded, "classes_", []))
-        if not taxonomy_codes.issubset(model_classes):
-            missing = sorted(taxonomy_codes - model_classes)
-            logger.warning(
-                "ML model is incompatible with current taxonomy — missing classes: %s. "
-                "Topic suggestions disabled. Retrain the model.",
-                missing,
-            )
-            return None
-
-        _pipeline = loaded
-        logger.info("ML topic classifier loaded successfully.")
-        return _pipeline
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Failed to load ML model: %s", type(exc).__name__)
+    # Guard: model must contain all current taxonomy classes
+    taxonomy_codes = set(_get_taxonomy_codes())
+    model_classes = set(getattr(loaded, "classes_", []))
+    if not taxonomy_codes.issubset(model_classes):
+        missing = sorted(taxonomy_codes - model_classes)
+        logger.warning(
+            "ML model is incompatible with current taxonomy — missing classes: %s. "
+            "Topic suggestions disabled. Retrain the model.",
+            missing,
+        )
         return None
+
+    _pipeline = loaded
+    return _pipeline
 
 
 def suggest_topic(prompt: str, options: list[str] | None = None) -> TopicSuggestionResponse:

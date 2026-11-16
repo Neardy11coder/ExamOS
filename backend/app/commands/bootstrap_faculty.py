@@ -26,8 +26,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
-from app.models.user import User
 from app.services.auth_service import (
+    ProvisionedUser,
     ProvisioningStatus,
     StudentRoleConflictError,
     provision_faculty_account,
@@ -48,7 +48,7 @@ def run_bootstrap(
     email: str | None = None,
     password: str | None = None,
     display_name: str | None = None,
-) -> tuple[ProvisioningStatus, User]:
+) -> tuple[ProvisioningStatus, ProvisionedUser]:
     """
     Programmatic entry point for faculty account bootstrapping.
 
@@ -87,7 +87,6 @@ def run_bootstrap(
                 password=target_password,
                 display_name=target_display_name,
             )
-            session.expunge(user)
             return status, user
     finally:
         engine.dispose()

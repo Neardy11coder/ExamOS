@@ -64,6 +64,7 @@ class User(Base):
 
     # Table-level constraints kept in the model to mirror DB schema doc §3.1
     __table_args__ = (
+        sa.Index("uq_users_lower_email", sa.func.lower(sa.column("email")), unique=True),
         sa.CheckConstraint(
             "role IN ('STUDENT', 'FACULTY_ADMIN')",
             name="ck_users_role",

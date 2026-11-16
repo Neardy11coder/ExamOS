@@ -1,0 +1,2911 @@
+{
+  "dataset_name": "ExamOS-Curated-CS-Topics",
+  "total_samples": 320,
+  "split_counts": {
+    "train": 224,
+    "val": 48,
+    "test": 48
+  },
+  "taxonomy_classes": [
+    "OS_PROCESS",
+    "OS_SCHEDULING",
+    "OS_SYNC",
+    "OS_MEMORY_FILES",
+    "DB_NORMALIZATION",
+    "DB_SQL_JOINS",
+    "DB_TRANSACTIONS",
+    "DB_INDEXING"
+  ],
+  "class_counts": {
+    "OS_PROCESS": 40,
+    "OS_SCHEDULING": 40,
+    "OS_SYNC": 40,
+    "OS_MEMORY_FILES": 40,
+    "DB_NORMALIZATION": 40,
+    "DB_SQL_JOINS": 40,
+    "DB_TRANSACTIONS": 40,
+    "DB_INDEXING": 40
+  },
+  "provenance": [
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "5a49fd42a6a0d81b",
+      "text": "What is the main role of the Process Control Block (PCB) in an operating system?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "05e23c46e89e5714",
+      "text": "Which system call creates a duplicate child process in Unix-like systems such as Linux?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "57d071a46901bf22",
+      "text": "Explain the difference between a process context switch and a user-to-kernel mode switch.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "d0708a871edc300e",
+      "text": "What happens when a child process terminates but the parent has not yet called wait()?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "d685f6ce08297cc8",
+      "text": "Identify the memory segments that make up the virtual address space of a running user process.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "a9ac5638ca6d4d6a",
+      "text": "How does inter-process communication (IPC) through shared memory differ from message queues?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "68abf979c3ed9770",
+      "text": "Which state does a process transition to when waiting for an I/O operation to complete?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "1a4189a0cea8ab97",
+      "text": "Describe the purpose of the init or systemd daemon as the ancestor of orphan processes.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "e2cd003e5093f470",
+      "text": "What information is saved into CPU registers during a process context switch by the dispatcher?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "b23c3c3eccdb538c",
+      "text": "Compare user-level threads with kernel-level threads in terms of creation and switching overhead.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "6962ce5381cb1471",
+      "text": "What is the function of the fork-exec pattern commonly used by command shells?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "cf8b15dbacd61154",
+      "text": "Explain how the process ready queue differs from the device wait queue in an OS kernel.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "ae29a5c614e1ebaa",
+      "text": "What causes a process to transition from the running state back to the ready state?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "0c25ce80b1ab5a17",
+      "text": "Describe the structure and purpose of the thread control block (TCB) relative to the PCB.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "c0300540ea991c45",
+      "text": "How does copy-on-write (COW) optimize process creation during the fork system call?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "db2bfef4d031ca17",
+      "text": "What occurs when a process attempts to access memory outside its allocated address space?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "c5f33d3450a56d80",
+      "text": "Which POSIX system call terminates a process and returns an exit status to its parent?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "7369c6209d265b7a",
+      "text": "Explain the role of pipes and named FIFOs for unidirectional inter-process byte streams.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "3bc2041bc493bba8",
+      "text": "Why is thread switching generally faster and less resource-intensive than process context switching?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "ebbb62cba459669d",
+      "text": "What signal is delivered to a parent process when one of its child processes changes state or terminates?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "2079d721e8b5383f",
+      "text": "How does Round Robin scheduling select the time quantum to balance responsiveness and overhead?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "8747ebe65eab1ef2",
+      "text": "Explain the convoy effect and which scheduling algorithm typically suffers from it.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "28b864946c9e0f14",
+      "text": "In Shortest Job First (SJF) scheduling, how is the duration of the next CPU burst estimated?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "ce4296fd918d2a43",
+      "text": "What is the difference between preemptive and non-preemptive CPU scheduling policies?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "18898008b5df6a30",
+      "text": "Define CPU turnaround time and how it is computed from completion time and arrival time.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "a69e240467321106",
+      "text": "Calculate the average waiting time for a set of processes scheduled under First-Come First-Served.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "0917500200e3dcf7",
+      "text": "How does a Multilevel Feedback Queue (MLFQ) adjust process priority based on observed CPU burst behavior?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "ce1670a754a02326",
+      "text": "What is starvation in priority scheduling, and how does aging prevent indefinitely postponed jobs?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "43a55ebfe40515c1",
+      "text": "Compare Shortest Remaining Time First (SRTF) with standard non-preemptive Shortest Job First.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "b58a0246f8c5f796",
+      "text": "What metric measures the fraction of time the processor is actively executing user or kernel tasks?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "0096fa61fb3b12df",
+      "text": "Explain how response time is measured in interactive operating systems.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "4bf7a6eb326b0849",
+      "text": "How does completely fair scheduler (CFS) use virtual runtime (vruntime) to schedule tasks?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "235ededd80022fbd",
+      "text": "What trade-off arises when choosing an extremely small time slice in time-sharing schedulers?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "1f5941463c96ed48",
+      "text": "Which scheduling criterion measures the number of completed processes per unit of elapsed time?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "09d7c3de59e0bced",
+      "text": "In lottery scheduling, how does the assignment of tickets determine process execution probability?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "6c95f4139b2146e3",
+      "text": "Explain rate-monotonic scheduling and earliest deadline first in real-time operating systems.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "c7428c6396e7fcdc",
+      "text": "Why can non-preemptive priority scheduling cause low-priority processes to block high-priority arrivals?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "2f3710506428400d",
+      "text": "What role does the dispatcher play after the short-term CPU scheduler chooses a process?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "d82be37c2d391338",
+      "text": "How does asymmetric multiprocessing scheduling differ from symmetric multiprocessing (SMP) scheduling?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "02e1e75487d9cb7c",
+      "text": "Under what conditions does Shortest Job First provably achieve the minimum average waiting time?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "0dbbd7d4f5da7f19",
+      "text": "What are the four necessary Coffman conditions required for a system deadlock to occur?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "a406ae2b1e53610e",
+      "text": "Explain how Dijkstra's Banker's Algorithm determines if granting a resource request leaves the system safe.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "ab16797fc54b33e0",
+      "text": "How does a binary semaphore differ from a counting semaphore in concurrent programming?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "aecf5bd6c8a87b82",
+      "text": "What is a race condition, and what three requirements must a solution to the critical section satisfy?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "9d11ce30ccf9aba1",
+      "text": "Describe how Peterson's algorithm achieves mutual exclusion between two cooperating concurrent processes.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "670f1ce17c68d5ae",
+      "text": "How do test-and-set and compare-and-swap atomic hardware instructions implement spinlocks?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "ab42451311a2e99c",
+      "text": "Explain priority inversion and how the priority inheritance protocol mitigates unbounded blocking.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "3f0f12b6e02e6c67",
+      "text": "In the Dining Philosophers problem, what synchronization strategy prevents circular deadlocks?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "d9d2a3823986a8eb",
+      "text": "How does a condition variable differ from a mutex lock in monitor-based thread synchronization?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "dda7e1df38225402",
+      "text": "Describe the Resource Allocation Graph (RAG) and how cycle detection identifies deadlocks.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "4fd806461aff9a38",
+      "text": "What is the difference between deadlock prevention, deadlock avoidance, and deadlock detection?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "1879b01095b7e630",
+      "text": "Explain how the Producer-Consumer problem uses empty, full, and mutex semaphores for bounded buffers.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "eb350ec6517be51d",
+      "text": "What is the readers-writers problem, and how can writer starvation be avoided in shared data access?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "d7e00be8bb398127",
+      "text": "Why can busy waiting (spinlocks) waste excessive CPU cycles on uniprocessor architectures?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "3cb2339a0307661e",
+      "text": "How does an operating system kernel recover from a detected deadlock using process termination or preemption?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "4c1b67b633c45c08",
+      "text": "Explain the concept of hold and wait, and describe a protocol that prevents this deadlock condition.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "bd4c6da3c6cddf27",
+      "text": "What is a futex in the Linux kernel and how does it optimize uncontended lock acquisition?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "af24e043472b574e",
+      "text": "Describe why circular wait can be eliminated by imposing a strict linear ordering on all resource types.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "69e2ff07363b98ff",
+      "text": "What guarantees does a reentrant monitor construct provide over raw mutex and condition variable pairs?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "ffc7a7c84ac5f061",
+      "text": "How do memory barriers and memory fences prevent instruction reordering bugs in multithreaded code?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "f4f563bbe654ee82",
+      "text": "How does paging translate virtual addresses into physical addresses using page tables and page offsets?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "12bee0ed89601971",
+      "text": "What is the purpose of the Translation Lookaside Buffer (TLB) and how does a TLB miss get handled?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "70c16c1dab449574",
+      "text": "Explain the difference between internal fragmentation and external fragmentation in memory allocation.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "8cb7118c53dc6a5c",
+      "text": "Describe the FIFO page replacement algorithm and demonstrate Belady's anomaly.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "b5f9af2f7519d026",
+      "text": "How does the Least Recently Used (LRU) page replacement policy select which frame to evict?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "1083a1c3200a5e4e",
+      "text": "What is thrashing in virtual memory systems, and how does the working-set model detect and resolve it?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "4953f1315d1ec9f1",
+      "text": "Explain the structure of an inode in Unix file systems including direct and indirect block pointers.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "7d6672f52bafcb66",
+      "text": "How does a multi-level page table reduce memory overhead for sparse virtual address spaces?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "540b7aeb50333c27",
+      "text": "Describe how journaling file systems prevent metadata inconsistency after an unexpected crash.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "04b20c23a6169b87",
+      "text": "Compare contiguous allocation, linked allocation, and indexed allocation for file system disk blocks.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "fc40f33f555de527",
+      "text": "What triggers a page fault exception, and what are the steps taken by the kernel to service it?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "5276dcc270ec5ef7",
+      "text": "Explain the difference between a hard link and a symbolic soft link in Unix file directory hierarchies.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "69e0ae37d99ccf9d",
+      "text": "How does the second-chance (clock) page replacement algorithm approximate true LRU behavior?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "27005bf924bd5aa5",
+      "text": "Describe the file allocation table (FAT) file system architecture and how file cluster chains are traversed.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "ee99138a026a8b58",
+      "text": "What is memory-mapped file I/O (mmap) and how does it allow files to be accessed via pointer dereferences?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "ceb4f8306437dae9",
+      "text": "Explain segmentation and how segment base and limit registers protect different program logical units.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "33a15f389abaad04",
+      "text": "How does inverted page table organization scale with physical memory size rather than virtual address space?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "9cba31c8ec141db2",
+      "text": "What is the function of the buffer cache and page cache in modern operating system storage architectures?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "d33471681e5d0860",
+      "text": "Describe the dirty bit (modified bit) in page table entries and its role during page replacement.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "1fb501550cf150ff",
+      "text": "How does copy-on-write virtual memory paging allow parent and child processes to share physical memory safely?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "1a5547e9e21cc5c5",
+      "text": "What functional dependency condition defines Boyce-Codd Normal Form (BCNF)?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "a0c4372401030498",
+      "text": "Explain the requirements for a relational database schema to satisfy Second Normal Form (2NF).",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "91999ecd02cbad03",
+      "text": "How does Third Normal Form (3NF) eliminate transitive functional dependencies between non-prime attributes?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "a12d10b3fe8ed0ac",
+      "text": "What is a multivalued dependency (MVD), and which normal form is specifically designed to eliminate it?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "ed47b4490c22ef5d",
+      "text": "Define Armstrong's axioms: reflexivity, augmentation, and transitivity for functional dependencies.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "b1c3ac499be357fe",
+      "text": "How do you compute the attribute closure of a set of attributes under given functional dependencies?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "ff014c97573ef0ca",
+      "text": "Explain lossless-join decomposition and how to verify if a relational decomposition preserves all data.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "28dee7e3611b31c5",
+      "text": "What is dependency preservation, and why can some relations not be decomposed into BCNF while preserving dependencies?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "e0f821cfc78968a5",
+      "text": "Describe First Normal Form (1NF) and the requirement that all attribute domain values be atomic.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "c8d54248cdefa6bf",
+      "text": "How is a candidate key identified from the minimal superkeys of a relational schema?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "b1847eedb6eacd3b",
+      "text": "What insertion, update, and deletion anomalies occur in unnormalized flat table designs?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "72de56a82754bdc0",
+      "text": "Explain the difference between a prime attribute and a non-prime attribute in relational normalization.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "7b4b781714669529",
+      "text": "How does Fourth Normal Form (4NF) decompose relations containing independent multivalued facts?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "9e1e1c90190e90dc",
+      "text": "What is the canonical minimal cover of a set of functional dependencies and how is it derived?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "4f3ed710c47bbaa3",
+      "text": "In relational schema synthesis, how is a 3NF design guaranteed to be both lossless and dependency-preserving?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "9537a9d6056089ba",
+      "text": "Describe Fifth Normal Form (5NF / Project-Join Normal Form) and join dependencies.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "d35ed070d3a84384",
+      "text": "Why might a database architect intentionally denormalize a reporting table in a data warehouse?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "b08828992470712e",
+      "text": "How does a surrogate primary key differ from a natural composite primary key in schema modeling?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "33db695cad88ce28",
+      "text": "Explain partial functional dependency and why 2NF strictly prohibits non-prime attributes depending on part of a key.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "9d00af0578c63a62",
+      "text": "What formal condition determines whether a relational decomposition is guaranteed to produce no spurious tuples?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "833ac06899c9c767",
+      "text": "What is the difference between an INNER JOIN and a FULL OUTER JOIN in SQL query semantics?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "4445bb3ddbc361e2",
+      "text": "How does a LEFT OUTER JOIN handle rows from the left table that have no matching records in the right table?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "599f5da50d65199f",
+      "text": "Explain how SQL window functions like ROW_NUMBER(), RANK(), and DENSE_RANK() partition and order result sets.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "f47c3ff63992c8bd",
+      "text": "What is a correlated subquery in SQL, and how does its execution differ from an uncorrelated nested subquery?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "a31232de635fe675",
+      "text": "Explain the difference between the WHERE clause and the HAVING clause when filtering grouped query results.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "9bae4b6264aa9c3d",
+      "text": "How does a CROSS JOIN produce the Cartesian product of two relations in relational algebra and SQL?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "b6e70b4fddc2e63f",
+      "text": "What is a Common Table Expression (CTE) and how does a recursive CTE traverse hierarchical tree data in SQL?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "c358efd85522d693",
+      "text": "Describe how NULL values affect equality comparisons in SQL joins and boolean three-valued logic expressions.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "5809e4c971720e3a",
+      "text": "Compare the UNION operator with UNION ALL in terms of result set deduplication and query execution cost.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "d4fcb72aa17712b0",
+      "text": "How does an EXISTS clause evaluate compared to an IN clause when checking for record presence in subqueries?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "858a6a2efdd2cc3c",
+      "text": "Explain self-joins and give an example of querying employee-manager relationships within the same table.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "4b8c3382cee57ef1",
+      "text": "What are the grouping set extensions in SQL: GROUP BY GROUPING SETS, CUBE, and ROLLUP?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "e7766bc6ffa1c452",
+      "text": "How do scalar aggregate functions like AVG, SUM, and COUNT handle NULL values in column projections?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "b648596e50bda626",
+      "text": "Explain the difference between a NATURAL JOIN and an explicit JOIN with an ON predicate condition.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "177254297557d99c",
+      "text": "How does the SQL COALESCE function handle multiple nullable arguments compared to NULLIF?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "57d2154e4560ce40",
+      "text": "Describe how lateral joins (CROSS JOIN LATERAL) allow subqueries to reference columns of preceding join tables.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "21fa99b717450d02",
+      "text": "What is the semantic difference between INTERSECT and EXCEPT operators in relational set operations?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "5493a978331edf3a",
+      "text": "How does an equi-join differ from a theta-join with non-equality comparison predicates?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "2d028aa4b2a6ec20",
+      "text": "Explain how CASE WHEN expressions provide conditional projection logic within SQL SELECT statements.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "2fe65fbf9a41b5ea",
+      "text": "What does the OVER clause specify when computing a rolling moving average with ROWS BETWEEN preceding and current row?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "40e27eaf070f41fb",
+      "text": "Define the four ACID properties: Atomicity, Consistency, Isolation, and Durability in database transactions.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "c8929daaffb80cd1",
+      "text": "What concurrency anomaly is permitted in Read Committed isolation level but prohibited in Repeatable Read?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "df15a8d02bbba842",
+      "text": "Explain dirty reads, non-repeatable reads, and phantom reads as defined in the ANSI SQL isolation levels.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "d5820321f444d80c",
+      "text": "How does Two-Phase Locking (2PL) guarantee serializability, and what is the difference between growing and shrinking phases?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "c24d0524efc41b7c",
+      "text": "Describe Multi-Version Concurrency Control (MVCC) and how snapshot isolation avoids readers blocking writers.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "5ae437bb56367491",
+      "text": "What is Write-Ahead Logging (WAL) and how does it guarantee transaction durability before flushing dirty pages?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "68130023d5d5315f",
+      "text": "Explain the ARIES recovery algorithm phases: Analysis, Redo, and Undo during database restart after failure.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "40e9fbda3301fd82",
+      "text": "How does a database transaction manager detect deadlocks using a wait-for graph and cycle detection?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "7895a389ee116340",
+      "text": "Compare optimistic concurrency control (validation-based) with pessimistic concurrency control (locking).",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "e4167b5959d29a49",
+      "text": "What is a savepoint within a database transaction and how does ROLLBACK TO SAVEPOINT work?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "cf1cba71e11690e4",
+      "text": "Explain cascading rollbacks and how strict two-phase locking (Strict 2PL) prevents them.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "27639472aa0fa671",
+      "text": "What is write skew anomaly in snapshot isolation and why does it require serializable snapshot isolation (SSI)?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "a53bd8512a706426",
+      "text": "Describe the purpose of checkpointing in transaction logs to limit log replay duration during recovery.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "d593d885ff716c6c",
+      "text": "How does shared (read) and exclusive (write) lock compatibility govern concurrent access to database rows?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "89c9ba750fd2329a",
+      "text": "Explain the two-phase commit (2PC) protocol used for atomic distributed transactions across multiple nodes.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "09aedcbdf80d6911",
+      "text": "What is conflict serializability, and how does precedence graph (serialization graph) testing verify it?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "c0d30cbedf4e69c8",
+      "text": "Describe intentional locks (IS, IX, SIX) in multiple granularity locking for tables, pages, and tuples.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "8365577784ba707e",
+      "text": "How does an explicit SELECT FOR UPDATE query acquire row-level locks to prevent lost updates?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "7d7acff526a0c72b",
+      "text": "What happens when a transaction aborts in terms of compensating actions and log record generation?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "237d5ddd2a19f960",
+      "text": "Explain how timestamp ordering protocol schedules transactions to achieve serializability without deadlocks.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "0941a79804b57cd4",
+      "text": "How does a B+ Tree index differ from a standard B-Tree index in terms of leaf node linking and range scans?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "66ded61bf36acd90",
+      "text": "Explain the difference between a clustered index and a non-clustered secondary index in storage organization.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "95cc55b574d3a73e",
+      "text": "What is a covering index, and how does an Index Only Scan satisfy queries without reading table heap blocks?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "cb212b60fcf3552d",
+      "text": "Under what conditions will the query planner choose a full Sequential Scan over an Index Scan on an indexed column?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "127eba3619518dfc",
+      "text": "Describe how composite indexes work and explain the leftmost prefix rule for multi-column index lookups.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "9ea72c3a41fa681b",
+      "text": "How does PostgreSQL EXPLAIN ANALYZE measure actual execution times, planning times, and buffer cache hits?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "a0779511199b98d7",
+      "text": "Compare Hash Join, Merge Join, and Nested Loop Join execution strategies in relational query planners.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "4dc5d14c9175c34a",
+      "text": "What is index selectivity, and why do low-cardinality boolean or status columns often make poor index candidates?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "d1bbaef4899969f0",
+      "text": "Explain partial indexes (filtered indexes) in PostgreSQL and when index storage can be saved with a WHERE clause.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "679a738f12e3e4d2",
+      "text": "How do expression-based functional indexes allow index lookups on computed values like LOWER(email)?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "00e1b224ab8941c3",
+      "text": "Describe the trade-offs of secondary indexes: query acceleration versus write, insert, and update overhead.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "8029148021694792",
+      "text": "What information do database catalog statistics (like pg_statistic and ANALYZE) provide to cost-based optimizers?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "83ce56675f1e5989",
+      "text": "Explain Bitmap Index Scan and Bitmap Heap Scan in PostgreSQL when combining multiple index matches.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "87c3b6f2a672c613",
+      "text": "What is index bloat in MVCC databases and how does REINDEX or VACUUM reclaim fragmented B-tree space?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "36c22e88a38a5744",
+      "text": "How does a GiST or GIN inverted index accelerate full-text search, array containment, and JSONB queries?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "00fe3eaa262bbebe",
+      "text": "Explain why wrapping an indexed column in an unindexed function call prevents the query planner from using the index.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "47580a72702d1eb4",
+      "text": "Compare clustered index tuple ordering with table clustering commands (CLUSTER) in PostgreSQL.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "3ee6c8eeeb0520d1",
+      "text": "What is the role of the database cost model in estimating disk I/O cost (seq_page_cost vs random_page_cost)?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "c4c7412c5e7f23b3",
+      "text": "How does an index on a foreign key column accelerate join operations and foreign key delete cascade checks?",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "a5a1d54d56872551",
+      "text": "Describe BRIN (Block Range Index) in PostgreSQL and how it efficiently indexes physically sorted time-series data.",
+      "source": "baseline_curated_v1",
+      "license": "ExamOS-Academic-Use"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "5ded858fa7e23ef5",
+      "text": "Find (and kill) processes listening to port 3000 on Mac",
+      "source": "stackoverflow",
+      "question_id": 3855127,
+      "score": 3185,
+      "url": "https://stackoverflow.com/questions/3855127/find-and-kill-processes-listening-to-port-3000-on-mac",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "84848b98d11e5bc7",
+      "text": "What is the difference between a process and a thread?",
+      "source": "stackoverflow",
+      "question_id": 200469,
+      "score": 2071,
+      "url": "https://stackoverflow.com/questions/200469/what-is-the-difference-between-a-process-and-a-thread",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "3d35533cb4d714b5",
+      "text": "How do I get the application exit code from a Windows command line?",
+      "source": "stackoverflow",
+      "question_id": 334879,
+      "score": 1018,
+      "url": "https://stackoverflow.com/questions/334879/how-do-i-get-the-application-exit-code-from-a-windows-command-line",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "5c3456f0b295bf36",
+      "text": "How can I measure the actual memory usage of an application or process?",
+      "source": "stackoverflow",
+      "question_id": 131303,
+      "score": 944,
+      "url": "https://stackoverflow.com/questions/131303/how-can-i-measure-the-actual-memory-usage-of-an-application-or-process",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "9cd7bdaa7c0dff4f",
+      "text": "Node / Express: EADDRINUSE, Address already in use - how can I stop the process using the port?",
+      "source": "stackoverflow",
+      "question_id": 4075287,
+      "score": 925,
+      "url": "https://stackoverflow.com/questions/4075287/node-express-eaddrinuse-address-already-in-use-how-can-i-stop-the-process",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "cc32741a208d4d85",
+      "text": "What killed my process and why?",
+      "source": "stackoverflow",
+      "question_id": 726690,
+      "score": 835,
+      "url": "https://stackoverflow.com/questions/726690/what-killed-my-process-and-why",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "6044875b64006705",
+      "text": "Xcode process launch failed: Security",
+      "source": "stackoverflow",
+      "question_id": 25824908,
+      "score": 796,
+      "url": "https://stackoverflow.com/questions/25824908/xcode-process-launch-failed-security",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "84c48339cfd097b6",
+      "text": "How to wait in bash for several subprocesses to finish, and return exit code !=0 when any subprocess ends with code !=0?",
+      "source": "stackoverflow",
+      "question_id": 356100,
+      "score": 784,
+      "url": "https://stackoverflow.com/questions/356100/how-to-wait-in-bash-for-several-subprocesses-to-finish-and-return-exit-code-0",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "1b6fe7cb97473f78",
+      "text": "How do I run a Node.js app as a background service?",
+      "source": "stackoverflow",
+      "question_id": 4018154,
+      "score": 672,
+      "url": "https://stackoverflow.com/questions/4018154/how-do-i-run-a-node-js-app-as-a-background-service",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "aad06f0e8c955b80",
+      "text": "How do I execute a command and get the output of the command within C++ using POSIX?",
+      "source": "stackoverflow",
+      "question_id": 478898,
+      "score": 610,
+      "url": "https://stackoverflow.com/questions/478898/how-do-i-execute-a-command-and-get-the-output-of-the-command-within-c-using-po",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "b7840f1a362ce282",
+      "text": "What's the best way to send a signal to all members of a process group?",
+      "source": "stackoverflow",
+      "question_id": 392022,
+      "score": 472,
+      "url": "https://stackoverflow.com/questions/392022/whats-the-best-way-to-send-a-signal-to-all-members-of-a-process-group",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "b94aaa38de7ada60",
+      "text": "Visual Studio \"Could not copy\" .... during build",
+      "source": "stackoverflow",
+      "question_id": 18102859,
+      "score": 462,
+      "url": "https://stackoverflow.com/questions/18102859/visual-studio-could-not-copy-during-build",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "e51b7c28d641c396",
+      "text": "Start a background process in Python",
+      "source": "stackoverflow",
+      "question_id": 1196074,
+      "score": 431,
+      "url": "https://stackoverflow.com/questions/1196074/start-a-background-process-in-python",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "6b8f2fdf722b41e7",
+      "text": "How can I get the start time of a long-running Linux process?",
+      "source": "stackoverflow",
+      "question_id": 5731234,
+      "score": 407,
+      "url": "https://stackoverflow.com/questions/5731234/how-can-i-get-the-start-time-of-a-long-running-linux-process",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "d5f3c6de4d8cf98c",
+      "text": "127 Return code from $?",
+      "source": "stackoverflow",
+      "question_id": 1763156,
+      "score": 406,
+      "url": "https://stackoverflow.com/questions/1763156/127-return-code-from",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "26d694c75c7db138",
+      "text": "What is a \"thread\" (really)?",
+      "source": "stackoverflow",
+      "question_id": 5201852,
+      "score": 391,
+      "url": "https://stackoverflow.com/questions/5201852/what-is-a-thread-really",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "48e4fd94ac2193ad",
+      "text": "What resources are shared between threads?",
+      "source": "stackoverflow",
+      "question_id": 1762418,
+      "score": 353,
+      "url": "https://stackoverflow.com/questions/1762418/what-resources-are-shared-between-threads",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "92596a50990ff592",
+      "text": "How to pause / sleep thread or process in Android?",
+      "source": "stackoverflow",
+      "question_id": 1520887,
+      "score": 324,
+      "url": "https://stackoverflow.com/questions/1520887/how-to-pause-sleep-thread-or-process-in-android",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "f21bc240eaaecebb",
+      "text": "How do I capture the output into a variable from an external process in PowerShell?",
+      "source": "stackoverflow",
+      "question_id": 8097354,
+      "score": 315,
+      "url": "https://stackoverflow.com/questions/8097354/how-do-i-capture-the-output-into-a-variable-from-an-external-process-in-powershe",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_PROCESS",
+      "content_hash": "f94ba5076fbfdcc0",
+      "text": "How to prevent a background process from being stopped after closing SSH client in Linux",
+      "source": "stackoverflow",
+      "question_id": 285015,
+      "score": 313,
+      "url": "https://stackoverflow.com/questions/285015/how-to-prevent-a-background-process-from-being-stopped-after-closing-ssh-client",
+      "matched_tag": "process",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "eda55d518ed9f9ca",
+      "text": "Python Weighted Random",
+      "source": "stackoverflow",
+      "question_id": 14992521,
+      "score": 33,
+      "url": "https://stackoverflow.com/questions/14992521/python-weighted-random",
+      "matched_tag": "round-robin",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "5e11c8ee29fcc979",
+      "text": "real time scheduling in Linux",
+      "source": "stackoverflow",
+      "question_id": 9374653,
+      "score": 26,
+      "url": "https://stackoverflow.com/questions/9374653/real-time-scheduling-in-linux",
+      "matched_tag": "round-robin",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "5963c5e86b414502",
+      "text": "How to implement a round-robin circular list and count access requests of an element?",
+      "source": "stackoverflow",
+      "question_id": 22869350,
+      "score": 14,
+      "url": "https://stackoverflow.com/questions/22869350/how-to-implement-a-round-robin-circular-list-and-count-access-requests-of-an-ele",
+      "matched_tag": "round-robin",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "1154d2dcaba0c69d",
+      "text": "Does a context switch occur in a system whose ready queue has only one process and which uses round-robin scheduling?",
+      "source": "stackoverflow",
+      "question_id": 8997616,
+      "score": 10,
+      "url": "https://stackoverflow.com/questions/8997616/does-a-context-switch-occur-in-a-system-whose-ready-queue-has-only-one-process-a",
+      "matched_tag": "round-robin",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "0fb3b59b28ec5a3f",
+      "text": "priority based round robin algorithm in operating system: is this preempted?",
+      "source": "stackoverflow",
+      "question_id": 26447104,
+      "score": 10,
+      "url": "https://stackoverflow.com/questions/26447104/priority-based-round-robin-algorithm-in-operating-system-is-this-preempted",
+      "matched_tag": "round-robin",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "66a20c91dc6ee105",
+      "text": "Thread context switch Vs. process context switch",
+      "source": "stackoverflow",
+      "question_id": 5440128,
+      "score": 169,
+      "url": "https://stackoverflow.com/questions/5440128/thread-context-switch-vs-process-context-switch",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "4bbf6755ef178ef4",
+      "text": "Context switch internals",
+      "source": "stackoverflow",
+      "question_id": 12630214,
+      "score": 86,
+      "url": "https://stackoverflow.com/questions/12630214/context-switch-internals",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "5d0f37cd6dd6a07c",
+      "text": "What is a cache hit and a cache miss? Why would context-switching cause cache miss?",
+      "source": "stackoverflow",
+      "question_id": 18559342,
+      "score": 85,
+      "url": "https://stackoverflow.com/questions/18559342/what-is-a-cache-hit-and-a-cache-miss-why-would-context-switching-cause-cache-mi",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "2da536a29e96f1ac",
+      "text": "simplest tool to measure C program cache hit/miss and cpu time in linux?",
+      "source": "stackoverflow",
+      "question_id": 10082517,
+      "score": 80,
+      "url": "https://stackoverflow.com/questions/10082517/simplest-tool-to-measure-c-program-cache-hit-miss-and-cpu-time-in-linux",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "47e28c984da2e596",
+      "text": "System call and context switch",
+      "source": "stackoverflow",
+      "question_id": 9238326,
+      "score": 65,
+      "url": "https://stackoverflow.com/questions/9238326/system-call-and-context-switch",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "09af44c547ee4b2a",
+      "text": "Steps in Context Switching",
+      "source": "stackoverflow",
+      "question_id": 7439608,
+      "score": 58,
+      "url": "https://stackoverflow.com/questions/7439608/steps-in-context-switching",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "d59a2fecd32a0907",
+      "text": "What is the overhead of a context-switch?",
+      "source": "stackoverflow",
+      "question_id": 21887797,
+      "score": 38,
+      "url": "https://stackoverflow.com/questions/21887797/what-is-the-overhead-of-a-context-switch",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "2031e9ac5a0370f1",
+      "text": "How does schedule()+switch_to() functions from linux kernel actually work?",
+      "source": "stackoverflow",
+      "question_id": 6525905,
+      "score": 32,
+      "url": "https://stackoverflow.com/questions/6525905/how-does-scheduleswitch-to-functions-from-linux-kernel-actually-work",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "e8198e21e4634584",
+      "text": "Write a C program to measure time spent in context switch in Linux OS",
+      "source": "stackoverflow",
+      "question_id": 2368384,
+      "score": 27,
+      "url": "https://stackoverflow.com/questions/2368384/write-a-c-program-to-measure-time-spent-in-context-switch-in-linux-os",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "fae2b11e32cac405",
+      "text": "Cost of context switch between threads of same process, on Linux",
+      "source": "stackoverflow",
+      "question_id": 5958941,
+      "score": 20,
+      "url": "https://stackoverflow.com/questions/5958941/cost-of-context-switch-between-threads-of-same-process-on-linux",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "783be797d542f935",
+      "text": "System calls overhead",
+      "source": "stackoverflow",
+      "question_id": 23599074,
+      "score": 18,
+      "url": "https://stackoverflow.com/questions/23599074/system-calls-overhead",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "71d6fc1a90d6c1de",
+      "text": "MultiCore CPUs, Multithreading and context switching?",
+      "source": "stackoverflow",
+      "question_id": 21414462,
+      "score": 16,
+      "url": "https://stackoverflow.com/questions/21414462/multicore-cpus-multithreading-and-context-switching",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "e1e03b4028443931",
+      "text": "What is saved in a context switch?",
+      "source": "stackoverflow",
+      "question_id": 1057711,
+      "score": 15,
+      "url": "https://stackoverflow.com/questions/1057711/what-is-saved-in-a-context-switch",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "790c319addd16e06",
+      "text": "What is a kernel stack used for?",
+      "source": "stackoverflow",
+      "question_id": 30419872,
+      "score": 13,
+      "url": "https://stackoverflow.com/questions/30419872/what-is-a-kernel-stack-used-for",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SCHEDULING",
+      "content_hash": "c554961b6e86c1bf",
+      "text": "(Writing kernel) How do I modify the interrupt descriptor table?",
+      "source": "stackoverflow",
+      "question_id": 10369536,
+      "score": 13,
+      "url": "https://stackoverflow.com/questions/10369536/writing-kernel-how-do-i-modify-the-interrupt-descriptor-table",
+      "matched_tag": "context-switch",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "f52470fb21d5a299",
+      "text": "What's the difference between deadlock and livelock?",
+      "source": "stackoverflow",
+      "question_id": 6155951,
+      "score": 422,
+      "url": "https://stackoverflow.com/questions/6155951/whats-the-difference-between-deadlock-and-livelock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "22a14f9ccbd784f6",
+      "text": "How to avoid MySQL 'Deadlock found when trying to get lock; try restarting transaction'",
+      "source": "stackoverflow",
+      "question_id": 2332768,
+      "score": 401,
+      "url": "https://stackoverflow.com/questions/2332768/how-to-avoid-mysql-deadlock-found-when-trying-to-get-lock-try-restarting-trans",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "91639a6ce69ad9ed",
+      "text": "await vs Task.Wait - Deadlock?",
+      "source": "stackoverflow",
+      "question_id": 13140523,
+      "score": 280,
+      "url": "https://stackoverflow.com/questions/13140523/await-vs-task-wait-deadlock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "79a5383e96783548",
+      "text": "Recursive Lock (Mutex) vs Non-Recursive Lock (Mutex)",
+      "source": "stackoverflow",
+      "question_id": 187761,
+      "score": 220,
+      "url": "https://stackoverflow.com/questions/187761/recursive-lock-mutex-vs-non-recursive-lock-mutex",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "13c8d3a9a1d730ec",
+      "text": "C++ terminate called without an active exception",
+      "source": "stackoverflow",
+      "question_id": 7381757,
+      "score": 167,
+      "url": "https://stackoverflow.com/questions/7381757/c-terminate-called-without-an-active-exception",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "0d242811ba6922df",
+      "text": "'await' works, but calling task.Result hangs/deadlocks",
+      "source": "stackoverflow",
+      "question_id": 17248680,
+      "score": 165,
+      "url": "https://stackoverflow.com/questions/17248680/await-works-but-calling-task-result-hangs-deadlocks",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "047edc09a945934c",
+      "text": "An async/await example that causes a deadlock",
+      "source": "stackoverflow",
+      "question_id": 15021304,
+      "score": 137,
+      "url": "https://stackoverflow.com/questions/15021304/an-async-await-example-that-causes-a-deadlock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "296ffddf94de8b97",
+      "text": "Is the lock statement reentrant in C#?",
+      "source": "stackoverflow",
+      "question_id": 391913,
+      "score": 136,
+      "url": "https://stackoverflow.com/questions/391913/is-the-lock-statement-reentrant-in-c",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "61d82510ed51ec5d",
+      "text": "Cause of a process being a deadlock victim",
+      "source": "stackoverflow",
+      "question_id": 8390322,
+      "score": 133,
+      "url": "https://stackoverflow.com/questions/8390322/cause-of-a-process-being-a-deadlock-victim",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "ea2ac6edc529eb53",
+      "text": "How to implement a lock?",
+      "source": "stackoverflow",
+      "question_id": 5346694,
+      "score": 116,
+      "url": "https://stackoverflow.com/questions/5346694/how-to-implement-a-lock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "d96a18ac50a0010d",
+      "text": "How to catch SqlException caused by deadlock?",
+      "source": "stackoverflow",
+      "question_id": 2256939,
+      "score": 111,
+      "url": "https://stackoverflow.com/questions/2256939/how-to-catch-sqlexception-caused-by-deadlock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "ccdf3cdc33935864",
+      "text": "Simple Deadlock Examples",
+      "source": "stackoverflow",
+      "question_id": 1385843,
+      "score": 99,
+      "url": "https://stackoverflow.com/questions/1385843/simple-deadlock-examples",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "7c84b32d9a394ea6",
+      "text": "Why does parallel stream with lambda in static initializer cause a deadlock?",
+      "source": "stackoverflow",
+      "question_id": 34820066,
+      "score": 94,
+      "url": "https://stackoverflow.com/questions/34820066/why-does-parallel-stream-with-lambda-in-static-initializer-cause-a-deadlock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "72e4e3db39595405",
+      "text": "Write a program that will surely go into deadlock",
+      "source": "stackoverflow",
+      "question_id": 8880286,
+      "score": 88,
+      "url": "https://stackoverflow.com/questions/8880286/write-a-program-that-will-surely-go-into-deadlock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "7ff4bccfa3792e0b",
+      "text": "Visual Studio hangs constantly during build",
+      "source": "stackoverflow",
+      "question_id": 19015305,
+      "score": 88,
+      "url": "https://stackoverflow.com/questions/19015305/visual-studio-hangs-constantly-during-build",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "4bd541971ec4f94e",
+      "text": "Diagnosing Deadlocks in SQL Server 2005",
+      "source": "stackoverflow",
+      "question_id": 20047,
+      "score": 82,
+      "url": "https://stackoverflow.com/questions/20047/diagnosing-deadlocks-in-sql-server-2005",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "8c4781986bb663d1",
+      "text": "How to solve SQL Server Error 1222 i.e Unlock a SQL Server table",
+      "source": "stackoverflow",
+      "question_id": 8258710,
+      "score": 81,
+      "url": "https://stackoverflow.com/questions/8258710/how-to-solve-sql-server-error-1222-i-e-unlock-a-sql-server-table",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "cc82486ce7c3e9ab",
+      "text": "Difference between racearound condition and deadlock",
+      "source": "stackoverflow",
+      "question_id": 3130079,
+      "score": 80,
+      "url": "https://stackoverflow.com/questions/3130079/difference-between-racearound-condition-and-deadlock",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "21be6e3222f94138",
+      "text": "Deadlock when accessing StackExchange.Redis",
+      "source": "stackoverflow",
+      "question_id": 30797716,
+      "score": 77,
+      "url": "https://stackoverflow.com/questions/30797716/deadlock-when-accessing-stackexchange-redis",
+      "matched_tag": "deadlock",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_SYNC",
+      "content_hash": "d18a704a815ff105",
+      "text": "Difference between binary semaphore and mutex",
+      "source": "stackoverflow",
+      "question_id": 62814,
+      "score": 1025,
+      "url": "https://stackoverflow.com/questions/62814/difference-between-binary-semaphore-and-mutex",
+      "matched_tag": "mutex",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "1bb7291e91973296",
+      "text": "Virtual Memory Usage from Java under Linux, too much memory used",
+      "source": "stackoverflow",
+      "question_id": 561245,
+      "score": 306,
+      "url": "https://stackoverflow.com/questions/561245/virtual-memory-usage-from-java-under-linux-too-much-memory-used",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "3800d4c74648ebba",
+      "text": "Why do x86-64 systems have only a 48 bit virtual address space?",
+      "source": "stackoverflow",
+      "question_id": 6716946,
+      "score": 155,
+      "url": "https://stackoverflow.com/questions/6716946/why-do-x86-64-systems-have-only-a-48-bit-virtual-address-space",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "33e758d202c94030",
+      "text": "Why doesn't this memory eater really eat memory?",
+      "source": "stackoverflow",
+      "question_id": 33234139,
+      "score": 152,
+      "url": "https://stackoverflow.com/questions/33234139/why-doesnt-this-memory-eater-really-eat-memory",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "be4e7b252faaafe2",
+      "text": "What are the differences between virtual memory and physical memory?",
+      "source": "stackoverflow",
+      "question_id": 14347206,
+      "score": 148,
+      "url": "https://stackoverflow.com/questions/14347206/what-are-the-differences-between-virtual-memory-and-physical-memory",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "aa7e8aa697a08a3e",
+      "text": "How does x86 paging work?",
+      "source": "stackoverflow",
+      "question_id": 18431261,
+      "score": 123,
+      "url": "https://stackoverflow.com/questions/18431261/how-does-x86-paging-work",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "fadd9af9cfc9d99e",
+      "text": "Difference between sequential write and random write",
+      "source": "stackoverflow",
+      "question_id": 2100584,
+      "score": 72,
+      "url": "https://stackoverflow.com/questions/2100584/difference-between-sequential-write-and-random-write",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "80d21891d811ad0f",
+      "text": "A simple \"Hello World\" needs 10G virtual memory on a 64-bit machine vs 1G at 32-bit?",
+      "source": "stackoverflow",
+      "question_id": 23385471,
+      "score": 69,
+      "url": "https://stackoverflow.com/questions/23385471/a-simple-hello-world-needs-10g-virtual-memory-on-a-64-bit-machine-vs-1g-at-32",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "1b0bd0821dbf732f",
+      "text": "Why does the stack address grow towards decreasing memory addresses?",
+      "source": "stackoverflow",
+      "question_id": 4560720,
+      "score": 62,
+      "url": "https://stackoverflow.com/questions/4560720/why-does-the-stack-address-grow-towards-decreasing-memory-addresses",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "d9ede2eb3a74f2b1",
+      "text": "Why is the page size of Linux (x86) 4 KB, how is that calculated?",
+      "source": "stackoverflow",
+      "question_id": 11543748,
+      "score": 57,
+      "url": "https://stackoverflow.com/questions/11543748/why-is-the-page-size-of-linux-x86-4-kb-how-is-that-calculated",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "b347f4409949f391",
+      "text": "How does multi-level page table save memory space?",
+      "source": "stackoverflow",
+      "question_id": 29467510,
+      "score": 56,
+      "url": "https://stackoverflow.com/questions/29467510/how-does-multi-level-page-table-save-memory-space",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "f706e946e7a1c0d3",
+      "text": "Does every process have its own page table?",
+      "source": "stackoverflow",
+      "question_id": 4381317,
+      "score": 55,
+      "url": "https://stackoverflow.com/questions/4381317/does-every-process-have-its-own-page-table",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "3afc5961080e0e89",
+      "text": "Understanding Virtual Address, Virtual Memory and Paging",
+      "source": "stackoverflow",
+      "question_id": 22290347,
+      "score": 54,
+      "url": "https://stackoverflow.com/questions/22290347/understanding-virtual-address-virtual-memory-and-paging",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "7ca882e4daccd734",
+      "text": "Difference between physical/logical/virtual memory address",
+      "source": "stackoverflow",
+      "question_id": 15851225,
+      "score": 45,
+      "url": "https://stackoverflow.com/questions/15851225/difference-between-physical-logical-virtual-memory-address",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "f1bf7430735e6d23",
+      "text": "Allocating copy on write memory within a process",
+      "source": "stackoverflow",
+      "question_id": 16965505,
+      "score": 45,
+      "url": "https://stackoverflow.com/questions/16965505/allocating-copy-on-write-memory-within-a-process",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "a68629b94ca64007",
+      "text": "Can't understand Belady's anomaly",
+      "source": "stackoverflow",
+      "question_id": 4800285,
+      "score": 41,
+      "url": "https://stackoverflow.com/questions/4800285/cant-understand-beladys-anomaly",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "00a7c237eee87d22",
+      "text": "Physical or virtual addressing is used in processors x86/x86_64 for caching in the L1, L2 and L3?",
+      "source": "stackoverflow",
+      "question_id": 19039280,
+      "score": 41,
+      "url": "https://stackoverflow.com/questions/19039280/physical-or-virtual-addressing-is-used-in-processors-x86-x86-64-for-caching-in-t",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "05d2fec247cbe5c7",
+      "text": "What exactly do shadow page tables (for VMMs) do?",
+      "source": "stackoverflow",
+      "question_id": 9832140,
+      "score": 40,
+      "url": "https://stackoverflow.com/questions/9832140/what-exactly-do-shadow-page-tables-for-vmms-do",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "4382322e6aa9db83",
+      "text": "Windows - Commit Size vs Virtual Size",
+      "source": "stackoverflow",
+      "question_id": 22174310,
+      "score": 40,
+      "url": "https://stackoverflow.com/questions/22174310/windows-commit-size-vs-virtual-size",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "9d940ee6edb22b24",
+      "text": "segmentation fault vs page fault",
+      "source": "stackoverflow",
+      "question_id": 6950549,
+      "score": 39,
+      "url": "https://stackoverflow.com/questions/6950549/segmentation-fault-vs-page-fault",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "OS_MEMORY_FILES",
+      "content_hash": "5a2fb7a531c0d075",
+      "text": "What's the difference between page and block in operating system?",
+      "source": "stackoverflow",
+      "question_id": 22137555,
+      "score": 34,
+      "url": "https://stackoverflow.com/questions/22137555/whats-the-difference-between-page-and-block-in-operating-system",
+      "matched_tag": "virtual-memory",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "a948d63faf519627",
+      "text": "Is storing a delimited list in a database column really that bad?",
+      "source": "stackoverflow",
+      "question_id": 3653462,
+      "score": 430,
+      "url": "https://stackoverflow.com/questions/3653462/is-storing-a-delimited-list-in-a-database-column-really-that-bad",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "e33fe038a7856811",
+      "text": "Storing JSON in database vs. having a new column for each key",
+      "source": "stackoverflow",
+      "question_id": 15367696,
+      "score": 346,
+      "url": "https://stackoverflow.com/questions/15367696/storing-json-in-database-vs-having-a-new-column-for-each-key",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "b1f98ed604976c3c",
+      "text": "What are database normal forms and can you give examples?",
+      "source": "stackoverflow",
+      "question_id": 723998,
+      "score": 301,
+      "url": "https://stackoverflow.com/questions/723998/what-are-database-normal-forms-and-can-you-give-examples",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "cda545ede6f26537",
+      "text": "First-time database design: am I overengineering?",
+      "source": "stackoverflow",
+      "question_id": 2320633,
+      "score": 249,
+      "url": "https://stackoverflow.com/questions/2320633/first-time-database-design-am-i-overengineering",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "68bb1a1dcad2011d",
+      "text": "Is there ever a time where using a database 1:1 relationship makes sense?",
+      "source": "stackoverflow",
+      "question_id": 517417,
+      "score": 192,
+      "url": "https://stackoverflow.com/questions/517417/is-there-ever-a-time-where-using-a-database-11-relationship-makes-sense",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "cc724e491e540206",
+      "text": "Difference between 3NF and BCNF in simple terms (must be able to explain to an 8-year old)",
+      "source": "stackoverflow",
+      "question_id": 8437957,
+      "score": 190,
+      "url": "https://stackoverflow.com/questions/8437957/difference-between-3nf-and-bcnf-in-simple-terms-must-be-able-to-explain-to-an-8",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "ac59ddf6815c0e9b",
+      "text": "Facebook database design?",
+      "source": "stackoverflow",
+      "question_id": 1009025,
+      "score": 141,
+      "url": "https://stackoverflow.com/questions/1009025/facebook-database-design",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "86296015c1fb89ba",
+      "text": "Native JSON support in MYSQL 5.7 : what are the pros and cons of JSON data type in MYSQL?",
+      "source": "stackoverflow",
+      "question_id": 33660866,
+      "score": 141,
+      "url": "https://stackoverflow.com/questions/33660866/native-json-support-in-mysql-5-7-what-are-the-pros-and-cons-of-json-data-type",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "3b461fa138522219",
+      "text": "What is database normalisation/normalization?",
+      "source": "stackoverflow",
+      "question_id": 246701,
+      "score": 117,
+      "url": "https://stackoverflow.com/questions/246701/what-is-database-normalisation-normalization",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "6437d0a71fc0c78e",
+      "text": "What's the better database design: more tables or more columns?",
+      "source": "stackoverflow",
+      "question_id": 59482,
+      "score": 106,
+      "url": "https://stackoverflow.com/questions/59482/whats-the-better-database-design-more-tables-or-more-columns",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "b17089e5650786d8",
+      "text": "When can I save JSON or XML data in an SQL table?",
+      "source": "stackoverflow",
+      "question_id": 43494824,
+      "score": 89,
+      "url": "https://stackoverflow.com/questions/43494824/when-can-i-save-json-or-xml-data-in-an-sql-table",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "6f162f11921b4de6",
+      "text": "What is the best way to implement Polymorphic Association in SQL Server?",
+      "source": "stackoverflow",
+      "question_id": 7000283,
+      "score": 89,
+      "url": "https://stackoverflow.com/questions/7000283/what-is-the-best-way-to-implement-polymorphic-association-in-sql-server",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "e0bed63f0762662e",
+      "text": "Convert JSON array in MySQL to rows",
+      "source": "stackoverflow",
+      "question_id": 39906435,
+      "score": 81,
+      "url": "https://stackoverflow.com/questions/39906435/convert-json-array-in-mysql-to-rows",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "51bee013e06be268",
+      "text": "Explaining why \"Just add another column to the DB\" is a bad idea, to non programmers",
+      "source": "stackoverflow",
+      "question_id": 1724381,
+      "score": 53,
+      "url": "https://stackoverflow.com/questions/1724381/explaining-why-just-add-another-column-to-the-db-is-a-bad-idea-to-non-program",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "73b1bff15c61a840",
+      "text": "When to Denormalize a Database Design",
+      "source": "stackoverflow",
+      "question_id": 4301089,
+      "score": 52,
+      "url": "https://stackoverflow.com/questions/4301089/when-to-denormalize-a-database-design",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "bf050b31590a684a",
+      "text": "In terms of databases, is \"Normalize for correctness, denormalize for performance\" a right mantra?",
+      "source": "stackoverflow",
+      "question_id": 293425,
+      "score": 48,
+      "url": "https://stackoverflow.com/questions/293425/in-terms-of-databases-is-normalize-for-correctness-denormalize-for-performanc",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "03b51cb123a727a7",
+      "text": "Normalization in MYSQL",
+      "source": "stackoverflow",
+      "question_id": 1258743,
+      "score": 47,
+      "url": "https://stackoverflow.com/questions/1258743/normalization-in-mysql",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "24270644c5468104",
+      "text": "Should I normalize my DB or not?",
+      "source": "stackoverflow",
+      "question_id": 934577,
+      "score": 38,
+      "url": "https://stackoverflow.com/questions/934577/should-i-normalize-my-db-or-not",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "21f4ff74f12c172f",
+      "text": "What is the difference between 3NF and BCNF?",
+      "source": "stackoverflow",
+      "question_id": 19749913,
+      "score": 37,
+      "url": "https://stackoverflow.com/questions/19749913/what-is-the-difference-between-3nf-and-bcnf",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_NORMALIZATION",
+      "content_hash": "f17dd6a981799799",
+      "text": "Normalization in plain English",
+      "source": "stackoverflow",
+      "question_id": 2331838,
+      "score": 36,
+      "url": "https://stackoverflow.com/questions/2331838/normalization-in-plain-english",
+      "matched_tag": "database-normalization",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "2b8743bdca46ec99",
+      "text": "What is the difference between INNER JOIN and OUTER JOIN?",
+      "source": "stackoverflow",
+      "question_id": 38549,
+      "score": 5293,
+      "url": "https://stackoverflow.com/questions/38549/what-is-the-difference-between-inner-join-and-outer-join",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "e9d0723b236272f3",
+      "text": "What's the difference between INNER JOIN, LEFT JOIN, RIGHT JOIN and FULL JOIN?",
+      "source": "stackoverflow",
+      "question_id": 5706437,
+      "score": 2223,
+      "url": "https://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-full-join",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "1ce69f854e0373e7",
+      "text": "How can I delete using INNER JOIN with SQL Server?",
+      "source": "stackoverflow",
+      "question_id": 16481379,
+      "score": 1806,
+      "url": "https://stackoverflow.com/questions/16481379/how-can-i-delete-using-inner-join-with-sql-server",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "66e5526faad8bbcc",
+      "text": "What is the difference between JOIN and INNER JOIN?",
+      "source": "stackoverflow",
+      "question_id": 565620,
+      "score": 1482,
+      "url": "https://stackoverflow.com/questions/565620/what-is-the-difference-between-join-and-inner-join",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "5f84bfc6af08703b",
+      "text": "INNER JOIN ON vs WHERE clause",
+      "source": "stackoverflow",
+      "question_id": 1018822,
+      "score": 1140,
+      "url": "https://stackoverflow.com/questions/1018822/inner-join-on-vs-where-clause",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "4a19ce70711e7f1e",
+      "text": "SQL Server - inner join when updating",
+      "source": "stackoverflow",
+      "question_id": 9588423,
+      "score": 442,
+      "url": "https://stackoverflow.com/questions/9588423/sql-server-inner-join-when-updating",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "c5a8c0519a0876e9",
+      "text": "Update statement with inner join on Oracle",
+      "source": "stackoverflow",
+      "question_id": 2446764,
+      "score": 389,
+      "url": "https://stackoverflow.com/questions/2446764/update-statement-with-inner-join-on-oracle",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "2fb9094da26e52e8",
+      "text": "join 3 tables in a view",
+      "source": "stackoverflow",
+      "question_id": 10195451,
+      "score": 385,
+      "url": "https://stackoverflow.com/questions/10195451/join-3-tables-in-a-view",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "6485d6021cfaf207",
+      "text": "CROSS JOIN vs INNER JOIN in SQL",
+      "source": "stackoverflow",
+      "question_id": 17759687,
+      "score": 215,
+      "url": "https://stackoverflow.com/questions/17759687/cross-join-vs-inner-join-in-sql",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "1ea6218ae49910fa",
+      "text": "MySQL INNER JOIN select only one row from second table",
+      "source": "stackoverflow",
+      "question_id": 12526194,
+      "score": 172,
+      "url": "https://stackoverflow.com/questions/12526194/mysql-inner-join-select-only-one-row-from-second-table",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "f90bb8df319903b5",
+      "text": "SQL DELETE with INNER JOIN",
+      "source": "stackoverflow",
+      "question_id": 8598791,
+      "score": 149,
+      "url": "https://stackoverflow.com/questions/8598791/sql-delete-with-inner-join",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "b34bd0c1ace992ea",
+      "text": "How to use mysql JOIN without ON condition?",
+      "source": "stackoverflow",
+      "question_id": 16470942,
+      "score": 137,
+      "url": "https://stackoverflow.com/questions/16470942/how-to-use-mysql-join-without-on-condition",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "6f198c55d0b0931b",
+      "text": "Is having an 'OR' in an INNER JOIN condition a bad idea?",
+      "source": "stackoverflow",
+      "question_id": 5901791,
+      "score": 135,
+      "url": "https://stackoverflow.com/questions/5901791/is-having-an-or-in-an-inner-join-condition-a-bad-idea",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "3a2dbdc89e8c6eab",
+      "text": "Why does Pandas inner join give ValueError: len(left_on) must equal the number of levels in the index of \"right\"?",
+      "source": "stackoverflow",
+      "question_id": 28228781,
+      "score": 92,
+      "url": "https://stackoverflow.com/questions/28228781/why-does-pandas-inner-join-give-valueerror-lenleft-on-must-equal-the-number-o",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "41d70d59fa916226",
+      "text": "SQL Inner join more than two tables",
+      "source": "stackoverflow",
+      "question_id": 14995000,
+      "score": 87,
+      "url": "https://stackoverflow.com/questions/14995000/sql-inner-join-more-than-two-tables",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "095e5902468a4cc2",
+      "text": "Difference in MySQL JOIN vs LEFT JOIN",
+      "source": "stackoverflow",
+      "question_id": 9770366,
+      "score": 83,
+      "url": "https://stackoverflow.com/questions/9770366/difference-in-mysql-join-vs-left-join",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "ff33521ffa82d546",
+      "text": "Rails ActiveRecord :joins with LEFT JOIN instead of INNER JOIN",
+      "source": "stackoverflow",
+      "question_id": 1509692,
+      "score": 76,
+      "url": "https://stackoverflow.com/questions/1509692/rails-activerecord-joins-with-left-join-instead-of-inner-join",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "e16f025279894354",
+      "text": "INNER JOIN vs INNER JOIN (SELECT . FROM)",
+      "source": "stackoverflow",
+      "question_id": 11574442,
+      "score": 73,
+      "url": "https://stackoverflow.com/questions/11574442/inner-join-vs-inner-join-select-from",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "788c959fd9a159aa",
+      "text": "Update Query with INNER JOIN between tables in 2 different databases on 1 server",
+      "source": "stackoverflow",
+      "question_id": 9894353,
+      "score": 70,
+      "url": "https://stackoverflow.com/questions/9894353/update-query-with-inner-join-between-tables-in-2-different-databases-on-1-server",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_SQL_JOINS",
+      "content_hash": "fc797481c2788c46",
+      "text": "Eliminating duplicate values based on only one column of the table",
+      "source": "stackoverflow",
+      "question_id": 17507887,
+      "score": 69,
+      "url": "https://stackoverflow.com/questions/17507887/eliminating-duplicate-values-based-on-only-one-column-of-the-table",
+      "matched_tag": "inner-join",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "45bca81e853f2633",
+      "text": "How to debug Lock wait timeout exceeded on MySQL?",
+      "source": "stackoverflow",
+      "question_id": 6000336,
+      "score": 311,
+      "url": "https://stackoverflow.com/questions/6000336/how-to-debug-lock-wait-timeout-exceeded-on-mysql",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "c12612d0dc7d104b",
+      "text": "What did MongoDB not being ACID compliant before v4 really mean?",
+      "source": "stackoverflow",
+      "question_id": 7149890,
+      "score": 259,
+      "url": "https://stackoverflow.com/questions/7149890/what-did-mongodb-not-being-acid-compliant-before-v4-really-mean",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "df96c0dab873e505",
+      "text": "Is there any NoSQL data store that is ACID compliant?",
+      "source": "stackoverflow",
+      "question_id": 2608103,
+      "score": 203,
+      "url": "https://stackoverflow.com/questions/2608103/is-there-any-nosql-data-store-that-is-acid-compliant",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "165b24a4f385b988",
+      "text": "How do ACID and database transactions work?",
+      "source": "stackoverflow",
+      "question_id": 3740280,
+      "score": 192,
+      "url": "https://stackoverflow.com/questions/3740280/how-do-acid-and-database-transactions-work",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "f29c257c5390f265",
+      "text": "Are disk sector writes atomic?",
+      "source": "stackoverflow",
+      "question_id": 2009063,
+      "score": 76,
+      "url": "https://stackoverflow.com/questions/2009063/are-disk-sector-writes-atomic",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "a22bd0398163598a",
+      "text": "MySQL InnoDB: Difference Between `FOR UPDATE` and `LOCK IN SHARE MODE`",
+      "source": "stackoverflow",
+      "question_id": 32827650,
+      "score": 53,
+      "url": "https://stackoverflow.com/questions/32827650/mysql-innodb-difference-between-for-update-and-lock-in-share-mode",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "e89487a98a74acc7",
+      "text": "Mongo DB 4.0 Transactions With Mongoose & NodeJs, Express",
+      "source": "stackoverflow",
+      "question_id": 51228059,
+      "score": 43,
+      "url": "https://stackoverflow.com/questions/51228059/mongo-db-4-0-transactions-with-mongoose-nodejs-express",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "96b6bfe7172d99d4",
+      "text": "What's a real-world example of ACID?",
+      "source": "stackoverflow",
+      "question_id": 999394,
+      "score": 35,
+      "url": "https://stackoverflow.com/questions/999394/whats-a-real-world-example-of-acid",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "dfc204f7b1c4d43d",
+      "text": "What happens if altering a stored procedure while it is running?",
+      "source": "stackoverflow",
+      "question_id": 15001062,
+      "score": 29,
+      "url": "https://stackoverflow.com/questions/15001062/what-happens-if-altering-a-stored-procedure-while-it-is-running",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "c15580ee5959bb9f",
+      "text": "Why write skew can happen in Repeatable reads?",
+      "source": "stackoverflow",
+      "question_id": 48417632,
+      "score": 28,
+      "url": "https://stackoverflow.com/questions/48417632/why-write-skew-can-happen-in-repeatable-reads",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "08504a2032585ed6",
+      "text": "Why we still need innodb redo log when mysql binlog has been enabled?",
+      "source": "stackoverflow",
+      "question_id": 57983490,
+      "score": 21,
+      "url": "https://stackoverflow.com/questions/57983490/why-we-still-need-innodb-redo-log-when-mysql-binlog-has-been-enabled",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "7c5ec278459beeff",
+      "text": "How do databases perform atomic I/O?",
+      "source": "stackoverflow",
+      "question_id": 9210691,
+      "score": 21,
+      "url": "https://stackoverflow.com/questions/9210691/how-do-databases-perform-atomic-i-o",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "2bc15ac9cbef2a91",
+      "text": "database atomicity consistency",
+      "source": "stackoverflow",
+      "question_id": 12664837,
+      "score": 20,
+      "url": "https://stackoverflow.com/questions/12664837/database-atomicity-consistency",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "c2ecd32c52ab31c6",
+      "text": "Does MySQL/InnoDB implement true serializable isolation?",
+      "source": "stackoverflow",
+      "question_id": 6269471,
+      "score": 20,
+      "url": "https://stackoverflow.com/questions/6269471/does-mysql-innodb-implement-true-serializable-isolation",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "f55e216c9a026791",
+      "text": "How ACID is the two-phase commit protocol?",
+      "source": "stackoverflow",
+      "question_id": 4639740,
+      "score": 19,
+      "url": "https://stackoverflow.com/questions/4639740/how-acid-is-the-two-phase-commit-protocol",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "ae7ced8699c74858",
+      "text": "What Applications Don't Need ACID?",
+      "source": "stackoverflow",
+      "question_id": 5781542,
+      "score": 15,
+      "url": "https://stackoverflow.com/questions/5781542/what-applications-dont-need-acid",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "44772d0923df08fd",
+      "text": "NoSQL Database for Online Money Transaction Management?",
+      "source": "stackoverflow",
+      "question_id": 7399533,
+      "score": 15,
+      "url": "https://stackoverflow.com/questions/7399533/nosql-database-for-online-money-transaction-management",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "ad562aab19d93a24",
+      "text": "Raw sql transactions with golang prepared statements",
+      "source": "stackoverflow",
+      "question_id": 40076596,
+      "score": 15,
+      "url": "https://stackoverflow.com/questions/40076596/raw-sql-transactions-with-golang-prepared-statements",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "3d0ecc22de9e4862",
+      "text": "Not nesting version of @atomic() in Django?",
+      "source": "stackoverflow",
+      "question_id": 39719567,
+      "score": 15,
+      "url": "https://stackoverflow.com/questions/39719567/not-nesting-version-of-atomic-in-django",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_TRANSACTIONS",
+      "content_hash": "64be7c58c27af572",
+      "text": "Memory Mapped files and atomic writes of single blocks",
+      "source": "stackoverflow",
+      "question_id": 3759311,
+      "score": 15,
+      "url": "https://stackoverflow.com/questions/3759311/memory-mapped-files-and-atomic-writes-of-single-blocks",
+      "matched_tag": "acid",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "a6c92c4a7bcd9cdd",
+      "text": "How does database indexing work in reality?",
+      "source": "stackoverflow",
+      "question_id": 1108,
+      "score": 2908,
+      "url": "https://stackoverflow.com/questions/1108/how-does-database-indexing-work-in-reality",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "5682d489d96c1f5b",
+      "text": "A list of indices in MongoDB?",
+      "source": "stackoverflow",
+      "question_id": 2789865,
+      "score": 109,
+      "url": "https://stackoverflow.com/questions/2789865/a-list-of-indices-in-mongodb",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "6f27d9f759ececee",
+      "text": "PostgreSQL: Create index for boolean column",
+      "source": "stackoverflow",
+      "question_id": 42972726,
+      "score": 76,
+      "url": "https://stackoverflow.com/questions/42972726/postgresql-create-index-for-boolean-column",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "03191b52204ecb16",
+      "text": "Can MySQL use multiple indexes for a single query?",
+      "source": "stackoverflow",
+      "question_id": 12222630,
+      "score": 74,
+      "url": "https://stackoverflow.com/questions/12222630/can-mysql-use-multiple-indexes-for-a-single-query",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "83b81ebec239a9dd",
+      "text": "Does rename_column take care of indexes?",
+      "source": "stackoverflow",
+      "question_id": 6732896,
+      "score": 70,
+      "url": "https://stackoverflow.com/questions/6732896/does-rename-column-take-care-of-indexes",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "36a261446bffba5a",
+      "text": "Multiple indexes vs single index on multiple columns in postgresql",
+      "source": "stackoverflow",
+      "question_id": 39297221,
+      "score": 67,
+      "url": "https://stackoverflow.com/questions/39297221/multiple-indexes-vs-single-index-on-multiple-columns-in-postgresql",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "cc9e9946fe2fc65c",
+      "text": "Postgres not using index when index scan is much better option",
+      "source": "stackoverflow",
+      "question_id": 34537096,
+      "score": 45,
+      "url": "https://stackoverflow.com/questions/34537096/postgres-not-using-index-when-index-scan-is-much-better-option",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "04e0c139c9d889e9",
+      "text": "Django: Does unique_together imply db_index=True in the same way that ForeignKey does?",
+      "source": "stackoverflow",
+      "question_id": 7830091,
+      "score": 38,
+      "url": "https://stackoverflow.com/questions/7830091/django-does-unique-together-imply-db-index-true-in-the-same-way-that-foreignkey",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "3d30d81bc0df9172",
+      "text": "Do I need to add an Index on ORDER BY field?",
+      "source": "stackoverflow",
+      "question_id": 16792391,
+      "score": 34,
+      "url": "https://stackoverflow.com/questions/16792391/do-i-need-to-add-an-index-on-order-by-field",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "37f7de584f5fe37c",
+      "text": "Why are super columns in Cassandra no longer favoured?",
+      "source": "stackoverflow",
+      "question_id": 11915255,
+      "score": 31,
+      "url": "https://stackoverflow.com/questions/11915255/why-are-super-columns-in-cassandra-no-longer-favoured",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "ed93c85dca9d7e37",
+      "text": "Cassandra: choosing a Partition Key",
+      "source": "stackoverflow",
+      "question_id": 18168379,
+      "score": 28,
+      "url": "https://stackoverflow.com/questions/18168379/cassandra-choosing-a-partition-key",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "0ac3377705a16bc4",
+      "text": "How do I know when to index a column, and with what?",
+      "source": "stackoverflow",
+      "question_id": 4093788,
+      "score": 27,
+      "url": "https://stackoverflow.com/questions/4093788/how-do-i-know-when-to-index-a-column-and-with-what",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "102ce5effa8644d7",
+      "text": "Indexes with included columns, what's the difference?",
+      "source": "stackoverflow",
+      "question_id": 41791413,
+      "score": 27,
+      "url": "https://stackoverflow.com/questions/41791413/indexes-with-included-columns-whats-the-difference",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "63107403b5e58691",
+      "text": "Neo4j: Step by Step to create an automatic index",
+      "source": "stackoverflow",
+      "question_id": 12877678,
+      "score": 25,
+      "url": "https://stackoverflow.com/questions/12877678/neo4j-step-by-step-to-create-an-automatic-index",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "6e05a3609dfc6dff",
+      "text": "SQL Server Web vs Standard edition",
+      "source": "stackoverflow",
+      "question_id": 48967318,
+      "score": 24,
+      "url": "https://stackoverflow.com/questions/48967318/sql-server-web-vs-standard-edition",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "9956b4bcc872ed34",
+      "text": "Deferrable, case-insensitive unique constraint",
+      "source": "stackoverflow",
+      "question_id": 16905867,
+      "score": 22,
+      "url": "https://stackoverflow.com/questions/16905867/deferrable-case-insensitive-unique-constraint",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "bf20b2bb55d8422e",
+      "text": "How to implement composite primary keys in rails",
+      "source": "stackoverflow",
+      "question_id": 41888549,
+      "score": 21,
+      "url": "https://stackoverflow.com/questions/41888549/how-to-implement-composite-primary-keys-in-rails",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "a29581d18a5426db",
+      "text": "Creating Indexes on DB with Hibernate @Index Annotation",
+      "source": "stackoverflow",
+      "question_id": 3533301,
+      "score": 19,
+      "url": "https://stackoverflow.com/questions/3533301/creating-indexes-on-db-with-hibernate-index-annotation",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "0d8403a5caa2f388",
+      "text": "How can I quickly detect and resolve SQL Server Index fragmentation for a database?",
+      "source": "stackoverflow",
+      "question_id": 43683716,
+      "score": 18,
+      "url": "https://stackoverflow.com/questions/43683716/how-can-i-quickly-detect-and-resolve-sql-server-index-fragmentation-for-a-databa",
+      "matched_tag": "database-indexes",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "topic_code": "DB_INDEXING",
+      "content_hash": "4c770fb21569e3f4",
+      "text": "B-Tree vs Hash Table",
+      "source": "stackoverflow",
+      "question_id": 7306316,
+      "score": 172,
+      "url": "https://stackoverflow.com/questions/7306316/b-tree-vs-hash-table",
+      "matched_tag": "b-tree",
+      "license": "CC BY-SA 4.0"
+    }
+  ]
+}

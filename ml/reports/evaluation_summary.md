@@ -1,24 +1,24 @@
 # ExamOS Question Topic Classifier — Evaluation Report
 
-- **Evaluated At:** 2026-10-23T15:54:00.816696+00:00
-- **Model Artifact:** `topic_classifier.joblib`
-- **Dataset Split:** 80% Train (128 samples) / 20% Test (32 samples), Seed=42
-- **Overall Accuracy:** **68.8%**
-- **Macro F1:** **0.6496**
-- **Weighted F1:** **0.6496**
+- **Evaluated At:** 2026-11-09T19:30:12.809424+00:00
+- **Model Artifact:** `test_model.joblib`
+- **Dataset Split:** 80% Train (256 samples) / 20% Test (64 samples), Seed=42
+- **Overall Accuracy:** **78.1%**
+- **Macro F1:** **0.7737**
+- **Weighted F1:** **0.7737**
 
 ## Per-Topic Performance
 
 | Topic Code | Precision | Recall | F1-Score | Test Samples |
 |---|---|---|---|---|
-| `OS_PROCESS` | 0.80 | 1.00 | 0.89 | 4 |
-| `OS_SCHEDULING` | 0.80 | 1.00 | 0.89 | 4 |
-| `OS_SYNC` | 0.00 | 0.00 | 0.00 | 4 |
-| `OS_MEMORY_FILES` | 1.00 | 0.75 | 0.86 | 4 |
-| `DB_NORMALIZATION` | 1.00 | 0.50 | 0.67 | 4 |
-| `DB_SQL_JOINS` | 0.43 | 0.75 | 0.55 | 4 |
-| `DB_TRANSACTIONS` | 0.75 | 0.75 | 0.75 | 4 |
-| `DB_INDEXING` | 0.50 | 0.75 | 0.60 | 4 |
+| `OS_PROCESS` | 0.60 | 0.75 | 0.67 | 8 |
+| `OS_SCHEDULING` | 0.88 | 0.88 | 0.88 | 8 |
+| `OS_SYNC` | 0.50 | 0.38 | 0.43 | 8 |
+| `OS_MEMORY_FILES` | 0.80 | 1.00 | 0.89 | 8 |
+| `DB_NORMALIZATION` | 0.83 | 0.62 | 0.71 | 8 |
+| `DB_SQL_JOINS` | 0.89 | 1.00 | 0.94 | 8 |
+| `DB_TRANSACTIONS` | 0.86 | 0.75 | 0.80 | 8 |
+| `DB_INDEXING` | 0.88 | 0.88 | 0.88 | 8 |
 
 ## Known Model Limitations
 

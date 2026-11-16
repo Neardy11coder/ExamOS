@@ -273,3 +273,53 @@ class TestMLServiceConfigValidation:
 
         ml_service._pipeline = None
         ml_service._pipeline_load_attempted = False
+
+
+# ---------------------------------------------------------------------------
+# Dataset curation & DistilBERT pipeline tests (M8-ML-DISTILBERT)
+# ---------------------------------------------------------------------------
+
+class TestDatasetCurationAndDistilBert:
+    """Verifies curation mapping, 3-way split separation, and DistilBERT pipeline adapter."""
+
+    def test_stack_tag_mapping_covers_all_eight_classes(self):
+        """All 8 taxonomy classes must be targetable by the tag mapper."""
+        from ml.dataset_curation import STACK_TAG_TO_TAXONOMY
+        target_classes = set(STACK_TAG_TO_TAXONOMY.values())
+        assert target_classes == set(TAXONOMY_TOPIC_CODES)
+
+    def test_three_way_stratified_splits_have_zero_leakage(self):
+        """3-way train/val/test splits must be strictly disjoint."""
+        from ml.dataset import load_dataset
+        from ml.dataset_curation import create_stratified_splits
+
+        records = load_dataset()
+        train, val, test = create_stratified_splits(records, val_size=0.15, test_size=0.15, seed=42)
+
+        assert len(train) + len(val) + len(test) == len(records)
+
+        train_texts = {r["normalized_text"] for r in train}
+        val_texts = {r["normalized_text"] for r in val}
+        test_texts = {r["normalized_text"] for r in test}
+
+        assert not (train_texts & val_texts), "Data leakage between train and val"
+        assert not (train_texts & test_texts), "Data leakage between train and test"
+        assert not (val_texts & test_texts), "Data leakage between val and test"
+
+        # Check all classes present in each split
+        for split, name in [(train, "train"), (val, "val"), (test, "test")]:
+            classes = {r["topic_code"] for r in split}
+            assert classes == set(TAXONOMY_TOPIC_CODES), f"Missing class in {name} split: {set(TAXONOMY_TOPIC_CODES) - classes}"
+
+    def test_distilbert_wrapper_adapter_interface(self):
+        """Verifies _DistilBertPipelineWrapper provides scikit-learn compatible predict_proba and classes_."""
+        from unittest.mock import MagicMock
+        from app.services.ml_service import _DistilBertPipelineWrapper
+
+        mock_model = MagicMock()
+        mock_tokenizer = MagicMock()
+        classes = list(TAXONOMY_TOPIC_CODES)
+
+        wrapper = _DistilBertPipelineWrapper(mock_model, mock_tokenizer, classes)
+        assert wrapper.classes_ == classes
+        assert hasattr(wrapper, "predict_proba")

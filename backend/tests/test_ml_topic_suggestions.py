@@ -177,6 +177,7 @@ class TestSuggestTopicService:
         # Default relative model path
         backend_dir = Path(ml_service.__file__).resolve().parents[2]
         expected_artifact = (backend_dir / settings.ML_MODEL_PATH).resolve()
+        fallback_artifact = (backend_dir / getattr(settings, "ML_FALLBACK_MODEL_PATH", "")).resolve()
 
         # Execute from a different working directory (tmp_path)
         old_cwd = os.getcwd()
@@ -184,8 +185,8 @@ class TestSuggestTopicService:
             os.chdir(tmp_path)
             reset_pipeline_cache()
             pipeline = ml_service._load_pipeline()
-            # If the artifact exists in repository, it must load even when CWD is tmp_path
-            if expected_artifact.is_file():
+            # If either artifact exists in repository, it must load even when CWD is tmp_path
+            if expected_artifact.exists() or fallback_artifact.is_file():
                 assert pipeline is not None
                 res = suggest_topic("Explain process synchronization")
                 # Must return an inference result (suggestion or low confidence), NOT MODEL_NOT_FOUND

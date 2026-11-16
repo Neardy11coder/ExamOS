@@ -66,3 +66,19 @@ Thumbs.db
 ml/artifacts/*.joblib
 ml/artifacts/*.pkl
 !ml/artifacts/.gitkeep
+
+# Antigravity Agent & Local Tooling
+.agents/
+skills-lock.json
+
+# Local Deployment CLI State & Cache
+.railway/
+.wrangler/
+
+# Scratch & Ephemeral Debugging Scripts
+scratch/
+backend/scratch/
+
+# Logs & Browser Video Recordings
+*.log
+*.mp4

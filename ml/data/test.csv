@@ -1,0 +1,49 @@
+topic_code,text,notes
+DB_TRANSACTIONS,NoSQL Database for Online Money Transaction Management?,stack_q_7399533_score_15
+OS_SYNC,How do memory barriers and memory fences prevent instruction reordering bugs in multithreaded code?,os_sync_20
+DB_INDEXING,How does an index on a foreign key column accelerate join operations and foreign key delete cascade checks?,db_indexing_19
+DB_INDEXING,"How does a GiST or GIN inverted index accelerate full-text search, array containment, and JSONB queries?",db_indexing_15
+OS_PROCESS,How to prevent a background process from being stopped after closing SSH client in Linux,stack_q_285015_score_313
+DB_TRANSACTIONS,What did MongoDB not being ACID compliant before v4 really mean?,stack_q_7149890_score_259
+OS_SCHEDULING,How does schedule()+switch_to() functions from linux kernel actually work?,stack_q_6525905_score_32
+OS_MEMORY_FILES,How does copy-on-write virtual memory paging allow parent and child processes to share physical memory safely?,os_mem_20
+OS_PROCESS,Which POSIX system call terminates a process and returns an exit status to its parent?,os_process_17
+OS_SCHEDULING,How does a Multilevel Feedback Queue (MLFQ) adjust process priority based on observed CPU burst behavior?,os_scheduling_07
+OS_MEMORY_FILES,How does multi-level page table save memory space?,stack_q_29467510_score_56
+OS_SYNC,"In the Dining Philosophers problem, what synchronization strategy prevents circular deadlocks?",os_sync_08
+DB_INDEXING,How does database indexing work in reality?,stack_q_1108_score_2908
+DB_TRANSACTIONS,Is there any NoSQL data store that is ACID compliant?,stack_q_2608103_score_203
+OS_PROCESS,What resources are shared between threads?,stack_q_1762418_score_353
+DB_NORMALIZATION,Is there ever a time where using a database 1:1 relationship makes sense?,stack_q_517417_score_192
+DB_SQL_JOINS,Describe how lateral joins (CROSS JOIN LATERAL) allow subqueries to reference columns of preceding join tables.,db_sql_16
+OS_SCHEDULING,How does asymmetric multiprocessing scheduling differ from symmetric multiprocessing (SMP) scheduling?,os_scheduling_19
+DB_NORMALIZATION,What is the canonical minimal cover of a set of functional dependencies and how is it derived?,db_norm_14
+DB_INDEXING,How can I quickly detect and resolve SQL Server Index fragmentation for a database?,stack_q_43683716_score_18
+DB_SQL_JOINS,Describe how NULL values affect equality comparisons in SQL joins and boolean three-valued logic expressions.,db_sql_08
+OS_SCHEDULING,What is the overhead of a context-switch?,stack_q_21887797_score_38
+DB_NORMALIZATION,How does a surrogate primary key differ from a natural composite primary key in schema modeling?,db_norm_18
+DB_NORMALIZATION,"What is a multivalued dependency (MVD), and which normal form is specifically designed to eliminate it?",db_norm_04
+OS_SCHEDULING,Under what conditions does Shortest Job First provably achieve the minimum average waiting time?,os_scheduling_20
+DB_SQL_JOINS,How can I delete using INNER JOIN with SQL Server?,stack_q_16481379_score_1806
+DB_SQL_JOINS,How does the SQL COALESCE function handle multiple nullable arguments compared to NULLIF?,db_sql_15
+OS_MEMORY_FILES,"What is thrashing in virtual memory systems, and how does the working-set model detect and resolve it?",os_mem_06
+DB_NORMALIZATION,What is the difference between 3NF and BCNF?,stack_q_19749913_score_37
+OS_MEMORY_FILES,Why does the stack address grow towards decreasing memory addresses?,stack_q_4560720_score_62
+OS_SCHEDULING,What role does the dispatcher play after the short-term CPU scheduler chooses a process?,os_scheduling_18
+DB_INDEXING,"What is index selectivity, and why do low-cardinality boolean or status columns often make poor index candidates?",db_indexing_08
+OS_SYNC,C++ terminate called without an active exception,stack_q_7381757_score_167
+OS_SYNC,Difference between racearound condition and deadlock,stack_q_3130079_score_80
+OS_SYNC,Diagnosing Deadlocks in SQL Server 2005,stack_q_20047_score_82
+OS_SYNC,Visual Studio hangs constantly during build,stack_q_19015305_score_88
+DB_TRANSACTIONS,How do ACID and database transactions work?,stack_q_3740280_score_192
+OS_PROCESS,Which system call creates a duplicate child process in Unix-like systems such as Linux?,os_process_02
+DB_TRANSACTIONS,How ACID is the two-phase commit protocol?,stack_q_4639740_score_19
+OS_MEMORY_FILES,"What triggers a page fault exception, and what are the steps taken by the kernel to service it?",os_mem_11
+DB_NORMALIZATION,Describe First Normal Form (1NF) and the requirement that all attribute domain values be atomic.,db_norm_09
+OS_PROCESS,Explain the difference between a process context switch and a user-to-kernel mode switch.,os_process_03
+DB_INDEXING,Do I need to add an Index on ORDER BY field?,stack_q_16792391_score_34
+DB_SQL_JOINS,Explain the difference between a NATURAL JOIN and an explicit JOIN with an ON predicate condition.,db_sql_14
+DB_TRANSACTIONS,"Mongo DB 4.0 Transactions With Mongoose & NodeJs, Express",stack_q_51228059_score_43
+OS_PROCESS,"What is a ""thread"" (really)?",stack_q_5201852_score_391
+DB_SQL_JOINS,What is the difference between INNER JOIN and OUTER JOIN?,stack_q_38549_score_5293
+OS_MEMORY_FILES,segmentation fault vs page fault,stack_q_6950549_score_39

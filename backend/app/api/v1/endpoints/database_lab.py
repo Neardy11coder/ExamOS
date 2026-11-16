@@ -189,7 +189,7 @@ def run_benchmark(
         dataset_size=result.dataset_size,
         seed=result.seed,
         variant="COMPARISON",
-        postgres_version=result.postgres_version,
+        postgres_version=result.postgres_version[:100],
         run_metadata={
             "repetitions": result.repetitions,
             "speedup_ratio": result.speedup_ratio,

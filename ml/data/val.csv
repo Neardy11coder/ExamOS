@@ -1,0 +1,49 @@
+topic_code,text,notes
+OS_MEMORY_FILES,How does inverted page table organization scale with physical memory size rather than virtual address space?,os_mem_17
+DB_NORMALIZATION,Difference between 3NF and BCNF in simple terms (must be able to explain to an 8-year old),stack_q_8437957_score_190
+OS_SCHEDULING,"What is starvation in priority scheduling, and how does aging prevent indefinitely postponed jobs?",os_scheduling_08
+DB_INDEXING,Does rename_column take care of indexes?,stack_q_6732896_score_70
+OS_PROCESS,How do I capture the output into a variable from an external process in PowerShell?,stack_q_8097354_score_315
+OS_SYNC,What are the four necessary Coffman conditions required for a system deadlock to occur?,os_sync_01
+OS_PROCESS,Which state does a process transition to when waiting for an I/O operation to complete?,os_process_07
+DB_NORMALIZATION,How is a candidate key identified from the minimal superkeys of a relational schema?,db_norm_10
+DB_SQL_JOINS,How does an equi-join differ from a theta-join with non-equality comparison predicates?,db_sql_18
+DB_SQL_JOINS,How does a CROSS JOIN produce the Cartesian product of two relations in relational algebra and SQL?,db_sql_06
+DB_TRANSACTIONS,Describe the purpose of checkpointing in transaction logs to limit log replay duration during recovery.,db_tx_13
+OS_SCHEDULING,"In lottery scheduling, how does the assignment of tickets determine process execution probability?",os_scheduling_15
+OS_SCHEDULING,What is saved in a context switch?,stack_q_1057711_score_15
+DB_SQL_JOINS,Explain self-joins and give an example of querying employee-manager relationships within the same table.,db_sql_11
+DB_SQL_JOINS,Eliminating duplicate values based on only one column of the table,stack_q_17507887_score_69
+DB_TRANSACTIONS,Raw sql transactions with golang prepared statements,stack_q_40076596_score_15
+OS_MEMORY_FILES,What exactly do shadow page tables (for VMMs) do?,stack_q_9832140_score_40
+OS_SYNC,An async/await example that causes a deadlock,stack_q_15021304_score_137
+DB_NORMALIZATION,Facebook database design?,stack_q_1009025_score_141
+DB_TRANSACTIONS,How does an explicit SELECT FOR UPDATE query acquire row-level locks to prevent lost updates?,db_tx_18
+OS_PROCESS,"How to wait in bash for several subprocesses to finish, and return exit code !=0 when any subprocess ends with code !=0?",stack_q_356100_score_784
+OS_MEMORY_FILES,Explain segmentation and how segment base and limit registers protect different program logical units.,os_mem_16
+OS_PROCESS,What's the best way to send a signal to all members of a process group?,stack_q_392022_score_472
+OS_SYNC,What guarantees does a reentrant monitor construct provide over raw mutex and condition variable pairs?,os_sync_19
+DB_NORMALIZATION,First-time database design: am I overengineering?,stack_q_2320633_score_249
+OS_SYNC,How does a condition variable differ from a mutex lock in monitor-based thread synchronization?,os_sync_09
+OS_MEMORY_FILES,Describe the FIFO page replacement algorithm and demonstrate Belady's anomaly.,os_mem_04
+OS_SYNC,What's the difference between deadlock and livelock?,stack_q_6155951_score_422
+OS_SCHEDULING,Why can non-preemptive priority scheduling cause low-priority processes to block high-priority arrivals?,os_scheduling_17
+DB_INDEXING,Creating Indexes on DB with Hibernate @Index Annotation,stack_q_3533301_score_19
+DB_SQL_JOINS,"What is a correlated subquery in SQL, and how does its execution differ from an uncorrelated nested subquery?",db_sql_04
+DB_NORMALIZATION,What is database normalisation/normalization?,stack_q_246701_score_117
+OS_SCHEDULING,Explain how response time is measured in interactive operating systems.,os_scheduling_11
+DB_TRANSACTIONS,What concurrency anomaly is permitted in Read Committed isolation level but prohibited in Repeatable Read?,db_tx_02
+OS_MEMORY_FILES,How does x86 paging work?,stack_q_18431261_score_123
+OS_SYNC,How does an operating system kernel recover from a detected deadlock using process termination or preemption?,os_sync_15
+OS_MEMORY_FILES,Windows - Commit Size vs Virtual Size,stack_q_22174310_score_40
+DB_INDEXING,Cassandra: choosing a Partition Key,stack_q_18168379_score_28
+OS_SCHEDULING,Compare Shortest Remaining Time First (SRTF) with standard non-preemptive Shortest Job First.,os_scheduling_09
+DB_TRANSACTIONS,Memory Mapped files and atomic writes of single blocks,stack_q_3759311_score_15
+DB_SQL_JOINS,"What are the grouping set extensions in SQL: GROUP BY GROUPING SETS, CUBE, and ROLLUP?",db_sql_12
+DB_INDEXING,Compare clustered index tuple ordering with table clustering commands (CLUSTER) in PostgreSQL.,db_indexing_17
+DB_INDEXING,What information do database catalog statistics (like pg_statistic and ANALYZE) provide to cost-based optimizers?,db_indexing_12
+DB_INDEXING,Describe how composite indexes work and explain the leftmost prefix rule for multi-column index lookups.,db_indexing_05
+OS_PROCESS,What happens when a child process terminates but the parent has not yet called wait()?,os_process_04
+DB_TRANSACTIONS,How do databases perform atomic I/O?,stack_q_9210691_score_21
+DB_NORMALIZATION,Why might a database architect intentionally denormalize a reporting table in a data warehouse?,db_norm_17
+OS_PROCESS,How does inter-process communication (IPC) through shared memory differ from message queues?,os_process_06

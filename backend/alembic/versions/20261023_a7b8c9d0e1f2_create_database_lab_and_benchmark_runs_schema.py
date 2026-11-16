@@ -148,20 +148,25 @@ def upgrade() -> None:
     # -------------------------------------------------------------------------
     # 4. Grant least-privilege access on lab tables and schema
     # -------------------------------------------------------------------------
-    for role in ("examos_app", "examos_test_runner"):
-        op.execute(f"GRANT USAGE ON SCHEMA examos_lab TO {role}")
-        op.execute(
-            f"GRANT SELECT, INSERT, UPDATE, DELETE ON "
-            f"examos_lab.lab_students_no_index, "
-            f"examos_lab.lab_students_indexed, "
-            f"examos_lab.lab_enrollments_no_index, "
-            f"examos_lab.lab_enrollments_indexed TO {role}"
-        )
-    # benchmark_runs is in public schema; default public privileges apply,
-    # but grant explicitly for clarity.
+    # Safely grant permissions if roles exist; emit informative NOTICE if absent.
     for role in ("examos_app", "examos_test_runner"):
         op.execute(
-            f"GRANT SELECT, INSERT, UPDATE, DELETE ON public.benchmark_runs TO {role}"
+            f"""
+            DO $$
+            BEGIN
+                IF EXISTS (SELECT FROM pg_roles WHERE rolname = '{role}') THEN
+                    GRANT USAGE ON SCHEMA examos_lab TO {role};
+                    GRANT SELECT, INSERT, UPDATE, DELETE ON
+                        examos_lab.lab_students_no_index,
+                        examos_lab.lab_students_indexed,
+                        examos_lab.lab_enrollments_no_index,
+                        examos_lab.lab_enrollments_indexed TO {role};
+                    GRANT SELECT, INSERT, UPDATE, DELETE ON public.benchmark_runs TO {role};
+                ELSE
+                    RAISE NOTICE 'Role % does not exist; skipping least-privilege grant for examos_lab tables.', '{role}';
+                END IF;
+            END $$;
+            """
         )
 
 

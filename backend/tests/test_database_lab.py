@@ -240,3 +240,50 @@ def test_benchmark_rejects_scale_mismatch(test_db_session: Session):
         )
     assert "Active lab dataset scale mismatch" in str(exc.value)
     assert "requested 'medium', but the database currently contains 'small'" in str(exc.value)
+
+
+# ==============================================================================
+# 5. Migration Role Handling & Cloud Deployment Defense Tests
+# ==============================================================================
+
+def test_migration_grant_logic_handles_roles_present_and_absent(test_db_session: Session):
+    """
+    Verify that the PL/pgSQL role-granting logic used in migration a7b8c9d0e1f2
+    executes without errors both when target roles exist and when they are absent.
+    """
+    # 1. Existing role: examos_test_runner exists in the test environment
+    role_present_block = text(
+        """
+        DO $$
+        BEGIN
+            IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'examos_test_runner') THEN
+                GRANT USAGE ON SCHEMA examos_lab TO examos_test_runner;
+                GRANT SELECT, INSERT, UPDATE, DELETE ON
+                    examos_lab.lab_students_no_index,
+                    examos_lab.lab_students_indexed,
+                    examos_lab.lab_enrollments_no_index,
+                    examos_lab.lab_enrollments_indexed TO examos_test_runner;
+                GRANT SELECT, INSERT, UPDATE, DELETE ON public.benchmark_runs TO examos_test_runner;
+            ELSE
+                RAISE NOTICE 'Role examos_test_runner does not exist; skipping.';
+            END IF;
+        END $$;
+        """
+    )
+    test_db_session.execute(role_present_block)
+
+    # 2. Absent role: hypothetical non-existent role in a fresh cloud database
+    role_absent_block = text(
+        """
+        DO $$
+        BEGIN
+            IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'non_existent_cloud_role_xyz') THEN
+                GRANT USAGE ON SCHEMA examos_lab TO non_existent_cloud_role_xyz;
+            ELSE
+                RAISE NOTICE 'Role non_existent_cloud_role_xyz does not exist; skipping.';
+            END IF;
+        END $$;
+        """
+    )
+    # Must succeed without throwing UndefinedObject error
+    test_db_session.execute(role_absent_block)

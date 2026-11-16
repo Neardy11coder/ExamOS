@@ -23,9 +23,9 @@ def run_seed_lab_dataset(
     seed: int = 42,
     db_url: str | None = None,
 ) -> int:
-    target_url = db_url or settings.DATABASE_URL
+    target_url = db_url or settings.MIGRATION_DATABASE_URL or settings.DATABASE_URL
     if not target_url:
-        print("Error: DATABASE_URL is not configured.", file=sys.stderr)
+        print("Error: Neither MIGRATION_DATABASE_URL nor DATABASE_URL is configured.", file=sys.stderr)
         return 1
 
     engine = create_engine(str(target_url), pool_pre_ping=True)

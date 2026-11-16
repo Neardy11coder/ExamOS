@@ -48,13 +48,14 @@ class TestFacultyProvisioningService:
         assert user.role == "FACULTY_ADMIN"
         assert user.display_name == "Dr. Smith"
         assert user.is_active is True
-        assert verify_password(password, user.password_hash)
+        assert not hasattr(user, "password_hash")
 
         # Confirm persisted in database
         persisted = test_db_session.query(User).filter(User.email == email).first()
         assert persisted is not None
         assert persisted.id == user.id
         assert persisted.role == "FACULTY_ADMIN"
+        assert verify_password(password, persisted.password_hash) is True
 
     def test_idempotent_exists_does_not_modify_password(self, test_db_session: Session) -> None:
         email = f"faculty_{uuid.uuid4().hex[:8]}@example.com"
@@ -68,8 +69,11 @@ class TestFacultyProvisioningService:
             display_name="Prof. Original",
         )
         assert status_1 == ProvisioningStatus.CREATED
-        original_hash = user_1.password_hash
+        assert not hasattr(user_1, "password_hash")
         original_id = user_1.id
+
+        persisted_1 = test_db_session.query(User).filter(User.id == original_id).one()
+        original_hash = persisted_1.password_hash
 
         # Second run with different password and display name: EXISTS
         status_2, user_2 = provision_faculty_account(
@@ -81,11 +85,14 @@ class TestFacultyProvisioningService:
 
         assert status_2 == ProvisioningStatus.EXISTS
         assert user_2.id == original_id
-        # Password hash must remain completely unchanged
-        assert user_2.password_hash == original_hash
+        assert not hasattr(user_2, "password_hash")
+
+        persisted_2 = test_db_session.query(User).filter(User.id == original_id).one()
+        # Password hash in database must remain completely unchanged
+        assert persisted_2.password_hash == original_hash
         # Original credentials still verify; new ones do not
-        assert verify_password(original_password, user_2.password_hash) is True
-        assert verify_password("AttemptedNewPassword2@", user_2.password_hash) is False
+        assert verify_password(original_password, persisted_2.password_hash) is True
+        assert verify_password("AttemptedNewPassword2@", persisted_2.password_hash) is False
 
     def test_existing_student_produces_conflict_and_is_not_promoted(
         self, test_db_session: Session

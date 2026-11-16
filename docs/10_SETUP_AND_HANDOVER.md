@@ -1,6 +1,6 @@
 # ExamOS — Setup, Operations and Handover
 
-**Version:** 1.3 · **Status:** M7-PROJECT-WRAPUP Complete — Final Repository Audit and Submission Readiness
+**Version:** 2.0 · **Status:** M10-PROD-RELEASE Complete — Full Cloud Production Release Verified on Cloudflare Pages + Railway + Neon
 **Purpose:** A single place to make the repository reproducible and enable work to continue after an agent/context change.
 
 > Commands in this document have been executed and verified. Each entry records the actual result.
@@ -490,9 +490,97 @@ Completed repository-wide final audit and evaluator onboarding hardening:
 4. **Security & Invariant Audit**: Verified that `.env` and sensitive credentials remain excluded from Git tracking; least-privilege PostgreSQL roles, answer key confidentiality, exclusive deadline enforcement, and isolated `examos_lab` schema boundaries remain intact.
 5. **Submission Readiness**: Confirmed that all roadmap milestones (M0–M7) are complete, documented, tested, and ready for evaluator inspection and defense.
 
+### Milestone 8 — Production Deployment Readiness (M8-DEPLOY-PREP)
+
+Completed deployment readiness hardening based on comprehensive cloud deployment audit for Vercel, Railway, and managed PostgreSQL:
+1. **Migration Role Grants Safety**: Modified migration `20261023_a7b8c9d0e1f2` to wrap least-privilege role grants (`examos_app`, `examos_test_runner`) in defensive PL/pgSQL `IF EXISTS (SELECT FROM pg_roles WHERE rolname = ...)` blocks with informative notice logging, allowing clean migration runs on fresh cloud databases while preserving least-privilege privileges when roles are provisioned.
+2. **Defensive Migration Test Coverage**: Added `test_migration_grant_logic_handles_roles_present_and_absent` to `backend/tests/test_database_lab.py`, asserting that the defensive grant logic succeeds without error both when target roles exist and when roles are absent.
+3. **Vercel API Proxy & SPA Routing**: Added [`frontend/vercel.json`](../frontend/vercel.json) configuring reverse-proxy rewrites for `/api/*` to the target Railway backend and SPA fallback to `/index.html`, preserving Same-Origin HttpOnly cookie transmission and CSRF mechanics.
+4. **Railway Configuration as Code**: Created [`railway.toml`](../railway.toml) declaring Nixpacks builder, model artifact build command (`pip install -r backend/requirements.txt && python -m ml.train`), and production Uvicorn multi-worker start command (`--workers 2`).
+5. **Cloud Database Role Provisioning Script**: Added [`database/provision-cloud-roles.sql`](../database/provision-cloud-roles.sql) allowing operators to easily provision least-privilege database roles (`examos_migrator`, `examos_app`, `examos_provisioner`, `examos_test_runner`) on managed PostgreSQL instances.
+6. **Cloud Deployment Runbook**: Authored [`docs/13_CLOUD_DEPLOYMENT_RUNBOOK.md`](./13_CLOUD_DEPLOYMENT_RUNBOOK.md) documenting complete production environment variables, database role models, Railway and Vercel step-by-step setup sequences, and post-deployment verification checklist.
+7. **CLI Command Consistency**: Fixed deployment commands across documentation to use verified CLI parsers (`cd backend` virtualenv invocation, `--prompt-password` for secure faculty bootstrap without shell history, and removal of unsupported flags).
+8. **DistilBERT Topic Classification Migration**:
+   - Curated dataset expanded from 160 to 320 samples (40 per class across all 8 classes) using high-quality StackSample/StackOverflow examples via [`ml/fetch_stack_curated.py`](../ml/fetch_stack_curated.py) and [`ml/dataset_curation.py`](../ml/dataset_curation.py) with source tracking and zero data leakage across 3-way train/val/test splits.
+   - Built [`ml/train_distilbert.py`](../ml/train_distilbert.py) targeting `distilbert/distilbert-base-uncased` with PyTorch/Transformers pipeline.
+   - Upgraded [`backend/app/services/ml_service.py`](../backend/app/services/ml_service.py) with `_DistilBertPipelineWrapper` adapter, seamlessly supporting fine-tuned DistilBERT models with zero breaking changes to FastAPI endpoints or API contracts, while retaining guaranteed lightweight scikit-learn fallback (`ML_FALLBACK_MODEL_PATH`).
+   - Retrained and re-evaluated baseline on curated dataset: Accuracy improved from 68.8% to 78.1%, Macro F1 improved from 0.6496 to 0.7737 across all 8 taxonomy topics.
+9. **Final Provisioning Security & Email Identity Hardening (Task 006B.6)**:
+   - Eliminated password hash disclosure: Removed `password_hash` from stored procedure `public.provision_faculty_account(...)` signature and created frozen `ProvisionedUser` dataclass; ORM instances never fabricate dummy password hashes.
+   - Enforced database and application case-insensitive email uniqueness via migration `20261025_d1e2f3a4b5c6` (`CREATE UNIQUE INDEX uq_users_lower_email ON public.users (lower(email))`) and query normalization in `authenticate_user`.
+   - Hardened concurrency and idempotency via atomic exception block (`EXCEPTION WHEN unique_violation THEN`) preventing constraint violation leakages under high race conditions.
+   - Secured Cloudflare Pages reverse proxy against redirect bypasses by rejecting any single or multiple backslashes in `sanitizeLocationHeader()`.
+   - Enforced ephemeral credential lifecycle for `examos_provisioner` (no persistent web service credentials, post-bootstrap `ALTER ROLE examos_provisioner NOLOGIN`).
+
+### Milestone 9 — Cloud Staging Deployment & Acceptance Verification (M9-STAGING-DEPLOY)
+
+Completed full cloud staging deployment and end-to-end acceptance testing on the zero-cost **Cloudflare Pages + Railway + Neon** architecture:
+1. **Live Staging Infrastructure**:
+   - **Frontend:** Cloudflare Pages project `examos-staging` live at `https://examos-staging.pages.dev`.
+   - **API Reverse Proxy:** Cloudflare Pages Function (`frontend/functions/api/[[path]].ts`) with `_routes.json` proxying `/api/*` directly to Railway, stripping upstream `Domain` attributes so `examos_access` (HttpOnly JWT) and `examos_csrf` cookies bind to `examos-staging.pages.dev` as first-party cookies.
+   - **Backend Service:** Railway service `backend` (FastAPI / Uvicorn `--workers 1`, Python 3.13) live at `https://backend-production-5837298c.up.railway.app`.
+   - **Database:** Neon PostgreSQL 16.16 staging branch `m8-role-probe` (`neondb`) in AWS Singapore (`ap-southeast-1`).
+2. **Database Role Model & Migration Execution**:
+   - Alembic migrations executed to head revision `d1e2f3a4b5c6` (14 tables across `public` and `examos_lab`).
+   - Script A (`database/provision-cloud-roles.sql`) and Script B (`database/post-migration-grants.sql`) executed with strict PostgreSQL 16 creator-admin invariants.
+   - Temporary `CREATE` privilege on `neondb` revoked from `examos_migrator`.
+   - Runtime role `examos_app` configured under least-privilege (DML on core tables, SELECT on `alembic_version` and `examos_lab.*`, USAGE/SELECT on public sequences, RESTRICTIVE RLS on `public.users`).
+3. **Authoritative Dataset Seeding & Provisioning**:
+   - Seeded 8 authoritative taxonomy topics into `public.topics`.
+   - Seeded medium benchmark dataset (1,000 students and 4,000 enrollments) into `examos_lab` benchmark tables with refreshed `ANALYZE` statistics.
+   - Provisioned `faculty@examos.edu` (`FACULTY_ADMIN`) via `public.provision_faculty_account(...)` SECURITY DEFINER stored procedure.
+   - Authored and published sample examination *"CS301: Systems & Databases Staging Benchmark Exam"*.
+4. **Automated Visual Browser Verification (Google Chrome QA Session)**:
+   - Driven via Chrome DevTools Protocol over remote debugging session on live deployment.
+   - **Student Registration:** `POST /api/v1/auth/register` (HTTP 201) with clean UI redirection.
+   - **Student Login:** `POST /api/v1/auth/login` (HTTP 200) setting HttpOnly `examos_access` and `examos_csrf` cookies.
+   - **Exam Workspace:** Active countdown timer, question navigation, optimistic answer auto-saving via `PUT /api/v1/attempts/.../answers/...` with "Saving..." -> "Saved" UI feedback.
+   - **Submission & Finalization:** Modal summary confirmation, `POST /api/v1/attempts/.../submit` (HTTP 200).
+   - **Scoring & Results:** Real-time grading verified at 10.00 / 10.00 marks (100.0%) with per-question correctness indicator.
+   - **Session Invalidation:** `POST /api/v1/auth/logout` (HTTP 204) clearing session cookies, returning 401 on subsequent requests.
+   - **Reliability:** 0 console errors, 0 unhandled warnings, sub-second API latency.
+
+### Milestone 10 — Production Release Cutover & Acceptance Verification (M10-PROD-RELEASE)
+
+Completed production release cutover and end-to-end acceptance testing on the zero-cost **Cloudflare Pages + Railway + Neon** architecture:
+1. **Authoritative Production Infrastructure**:
+   - **Frontend:** Cloudflare Pages project `examos` live at `https://examos-cts.pages.dev`.
+   - **Edge API Reverse Proxy:** Cloudflare Pages Function (`frontend/functions/api/[[path]].ts`) proxying `/api/*` directly to Railway `backend-prod`, stripping upstream `Domain` attributes so `examos_access` (HttpOnly JWT) and `examos_csrf` cookies bind to `examos-cts.pages.dev` as first-party cookies.
+   - **Backend Service:** Railway service `backend-prod` (`25ae3587-5fa0-4651-86d3-5a88bd1f8b41`, deployment `7c538eaa-59ac-4442-b5c3-40b442a48f15`, FastAPI / Uvicorn `--workers 1`, Python 3.13) live at `https://backend-prod-production-4aade984.up.railway.app`.
+   - **Database:** Neon PostgreSQL 16.16 root branch `production` (`br-mute-dream-a1r9m0tv`, database `neondb`, direct host `ep-square-fire-a1usl0by.ap-southeast-1.aws.neon.tech`) in AWS Singapore (`ap-southeast-1`).
+   - **Verified Pre-Release Snapshot:** Point-in-time parent backup branch `pre-release-prod-backup` (`br-wild-hill-a1dcx7yj`, parent `production`) preserved.
+2. **Database Role Model & Migration Execution**:
+   - Alembic migrations executed to head revision `d1e2f3a4b5c6` (14 tables across `public` and `examos_lab`).
+   - Script A (`database/provision-cloud-roles.sql`) and Script B (`database/post-migration-grants.sql`) executed with strict PostgreSQL 16 creator-admin invariants.
+   - Temporary `CREATE` privilege on `neondb` revoked from `examos_migrator` (verified `has_database_privilege == False`).
+   - Runtime role `examos_app` configured under least-privilege (DML on core tables, SELECT on `alembic_version` and `examos_lab.*`, USAGE/SELECT on public sequences, RESTRICTIVE RLS on `public.users`).
+   - Provisioner role locked post-bootstrap (`ALTER ROLE examos_provisioner NOLOGIN;`, verified `rolcanlogin == False`).
+3. **Authoritative Dataset Seeding & Initial Provisioning**:
+   - Seeded 8 authoritative taxonomy topics into `public.topics`.
+   - Seeded medium benchmark dataset (1,000 students and 4,000 enrollments) into `examos_lab` benchmark tables with refreshed `ANALYZE` statistics.
+   - Provisioned authoritative lead faculty administrator `faculty.admin@examos.edu` (`FACULTY_ADMIN`) via `public.provision_faculty_account(...)` SECURITY DEFINER stored procedure.
+   - Zero test exams or test candidates in baseline production snapshot.
+4. **Automated Production Acceptance Suite (`scratch/verify_production_acceptance.py`)**:
+   - **Step 1: Health Endpoints:** Direct Railway (`200 OK`, `production`, `connected`), Cloudflare Edge Proxy (`200 OK`, `production`, `connected`), Static Frontend (`200 OK`, root mount verified).
+   - **Step 2: Faculty Authentication:** `POST /api/v1/auth/login` (HTTP 200), HttpOnly cookie delivery, CSRF issuance, `GET /api/v1/auth/me` (`FACULTY_ADMIN`).
+   - **Step 3: Exam Authoring & Snapshot:** `POST /api/v1/questions` (Q1, Q2), `POST /api/v1/exams`, question attachment, `POST /api/v1/exams/{id}/publish` (HTTP 200).
+   - **Step 4: Student Registration & Auth:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login` (HTTP 200), `GET /api/v1/auth/me` (`STUDENT`).
+   - **Step 5: Full Examination Attempt Lifecycle:** `POST /api/v1/exams/{id}/attempts/start` (HTTP 201), optimistic concurrency answer saves with revision tracking (`PUT /attempts/{id}/answers/{qid}`, revision=1), atomic finalization (`POST /attempts/{id}/submit`, HTTP 200), verified score 10.00 / 10.00.
+   - **Step 6: Database Performance Lab:** Strict student boundary (HTTP 403 Forbidden); faculty benchmark execution on `selective_lookup` (HTTP 200, unindexed=0.11ms, indexed=0.05ms, speedup=2.43x).
+   - **Step 7: CSRF Protection Enforcement:** Mutating request without CSRF rejected (HTTP 403), request with forged CSRF rejected (HTTP 403).
+   - **Step 8: Session Invalidation:** `POST /api/v1/auth/logout` (HTTP 200), session terminated, subsequent `GET /api/v1/auth/me` returns HTTP 401.
+5. **100% Staging Preservation**:
+   - Staging frontend `https://examos-staging.pages.dev` and backend proxy `https://examos-staging.pages.dev/api/v1/health` remain fully online (`app_env: staging`, `database: connected`).
+   - Neon branch `m8-role-probe` and Railway service `backend` remain untouched.
+6. **Operating Costs & Billing Limits**:
+   - Railway: $5.00/month flat (Hobby plan baseline with 512MB RAM cap per service).
+   - Cloudflare Pages: $0.00/month (unlimited static requests, 100k Function requests/day).
+   - Neon: $0.00/month (Free tier, 0.5 GB storage cap).
+   - Total recurring infrastructure spend: $5.00/month.
+
 ### Next task
 
-1. **Repository Tagging & Final Release**: Tag `v1.0.0` or `submission-ready` on `main` branch.
+1. **Production Handover & Domain Customization**: Present the final production cutover report to the operator and configure custom vanity domain (CNAME) if desired.
 
 ### Decisions not to re-open without a real issue
 
@@ -513,4 +601,4 @@ Copy this prompt into a new Codex/agent session after opening the repository:
 
 > You are continuing the ExamOS project. First read `AGENTS.md`, `README.md`, `docs/00_PROJECT_BRIEF.md`, `docs/01_REQUIREMENTS.md` including Appendix A, `docs/02_SYSTEM_ARCHITECTURE.md`, and `docs/10_SETUP_AND_HANDOVER.md`. Inspect the actual repository and Git status before changing files. Treat the requirements Appendix A and system architecture as the resolved design baseline. Do not claim features or tests exist unless verified in the repository. Report current implementation status, the next smallest task from the roadmap, its relevant requirement IDs, files to touch, and tests to run. Implement one bounded task at a time; preserve transaction, deadline, answer-key confidentiality, and lab-isolation invariants. If documentation and code disagree, report the discrepancy instead of silently rewriting requirements.
 
-**Document Status:** Complete — Updated after M7-PROJECT-WRAPUP completion (2026-10-24, all milestones verified)
+**Document Status:** Complete — Updated after Task 006B.6 completion (2026-10-25, provisioning security and email identity hardened)
