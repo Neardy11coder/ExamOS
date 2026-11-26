@@ -42,8 +42,8 @@ psql -v ON_ERROR_STOP=1 \
     SELECT format('CREATE ROLE %I WITH LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE', :'provisioner_user', :'provisioner_pass')
     WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'provisioner_user')\gexec
 
-    -- Create fixed test database owned by admin
-    SELECT format('CREATE DATABASE examos_test OWNER %I', :'admin_user')
+    -- Create fixed test database owned by test runner
+    SELECT format('CREATE DATABASE examos_test OWNER %I', :'test_user')
     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'examos_test')\gexec
 
     -- Revoke public connection privileges from both databases

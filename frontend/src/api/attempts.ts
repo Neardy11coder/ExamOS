@@ -160,7 +160,7 @@ function getCsrfToken(explicitToken?: string | null): string {
 async function extractApiError(res: Response, fallback: string): Promise<ApiError> {
   try {
     const body = await res.json();
-    const errObj = body?.detail?.error ?? body?.detail;
+    const errObj = body?.error ?? body?.detail?.error ?? body?.detail;
     const code = errObj?.code ?? body?.code;
     const message = errObj?.message ?? body?.message ?? fallback;
 

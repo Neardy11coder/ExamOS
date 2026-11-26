@@ -5,18 +5,19 @@
  * - Loads authoritative attempt state via GET /api/v1/attempts/{attempt_id}.
  * - Renders exam metadata, numbered question navigation palette, and question prompt.
  * - Handles question selection without exposing correctness keys.
- * - Manages answer autosave via PUT /api/v1/attempts/{attempt_id}/answers/{exam_question_id}.
- * - Displays per-question save indicators: 'saved', 'saving', 'save-failed'.
+ * - Manages answer autosave via AttemptAutosaveManager (per-question serialized queue,
+ *   300 ms debounce, optimistic UI vs server-confirmed state separation, safe 409 & failure reconciliation).
+ * - Displays per-question save indicators: 'pending', 'saving', 'saved', 'failed', 'conflict'.
  * - Displays non-colour question palette status: Current (bold/indicator), Answered (✓), Unanswered (•), Review (⚑).
  * - Implements countdown timer based on server remaining_seconds and deadline_at.
  * - On 0 countdown, auto-triggers authoritative refresh, locking workspace if status transitions to EXPIRED.
- * - Handles optimistic concurrency (409 ANSWER_REVISION_CONFLICT) by accepting server revision safely.
- * - Provides submit confirmation modal with counts of answered/unanswered/flagged questions.
+ * - Handles optimistic concurrency (409 ANSWER_REVISION_CONFLICT) by preserving user intent and offering explicit resolution.
+ * - Provides submit confirmation modal with counts of answered/unanswered/flagged questions and flushes pending saves.
  * - Submits via POST /api/v1/attempts/{attempt_id}/submit and redirects to /attempts/{attempt_id}/result.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useBlocker, useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle,
   AlertTriangle,
@@ -28,6 +29,7 @@ import {
   Clock,
   HelpCircle,
   Loader2,
+  RotateCcw,
   Send,
   X,
 } from 'lucide-react';
@@ -35,14 +37,25 @@ import {
   apiGetAttempt,
   apiSaveAnswer,
   apiSubmitAttempt,
-  RevisionConflictError,
   type AttemptDetailRead,
   type StudentQuestionRead,
 } from '../api/attempts';
+import {
+  AttemptAutosaveManager,
+  type QuestionAutosaveView,
+  type QuestionSaveStatus,
+} from '../features/attempt/autosaveManager';
+import {
+  AttemptLoadCoordinator,
+  executeAttemptSubmission,
+  flushAttemptBeforeNavigation,
+} from '../features/attempt/attemptLifecycleController';
+import {
+  AttemptCountdownController,
+  type CountdownRefreshError,
+} from '../features/attempt/countdownController';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../components/ui';
-
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
 export function AttemptWorkspacePage() {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -56,81 +69,374 @@ export function AttemptWorkspacePage() {
   // Active question index
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Per-question save status: questionId -> SaveStatus
-  const [saveStatuses, setSaveStatuses] = useState<Record<string, SaveStatus>>({});
-  // Per-question save error messages
-  const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
+  // Per-question autosave view state (optimistic local state, server state, status, conflict details)
+  const [autosaveViews, setAutosaveViews] = useState<Record<string, QuestionAutosaveView>>({});
 
-  // Countdown seconds remaining
+  // Countdown seconds remaining and terminal refresh failures that need user action.
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [countdownRefreshError, setCountdownRefreshError] =
+    useState<CountdownRefreshError | null>(null);
 
   // Submit modal
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [navigationSaveError, setNavigationSaveError] = useState<string | null>(null);
+  const submittingRef = useRef(false);
+  const workspaceLockedRef = useRef(false);
+  const navigationBypassRef = useRef(false);
+  const navigationFlushInProgressRef = useRef(false);
+  const workspaceHeaderRef = useRef<HTMLElement | null>(null);
+  const workspaceBodyRef = useRef<HTMLDivElement | null>(null);
+  const submitDialogRef = useRef<HTMLDivElement | null>(null);
 
-  // Track pending save promises to block premature submit races
-  const inFlightSavesRef = useRef<Set<string>>(new Set());
+  // Keep fresh references for async callbacks & timers
+  const csrfTokenRef = useRef<string | null>(csrfToken);
+  csrfTokenRef.current = csrfToken;
 
-  // -------------------------------------------------------------------------
-  // 1. Authoritative Attempt Loader
-  // -------------------------------------------------------------------------
-  const loadAttempt = useCallback(
-    async (isInitial = false) => {
-      if (!attemptId) return;
-      if (isInitial) setIsLoading(true);
-      try {
-        const data = await apiGetAttempt(attemptId);
-        setAttempt(data);
-        setRemainingSeconds(Math.max(0, data.remaining_seconds));
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
 
-        // If already finalized, redirect to result
-        if (data.status === 'SUBMITTED' || data.status === 'EXPIRED') {
-          navigate(`/attempts/${attemptId}/result`, { replace: true });
-          return;
-        }
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to load attempt.';
-        setLoadError(msg);
-      } finally {
-        if (isInitial) setIsLoading(false);
-      }
-    },
-    [attemptId, navigate],
+  const isMountedRef = useRef(false);
+  const hasInitializedRouteRef = useRef(false);
+  const attemptRef = useRef<AttemptDetailRead | null>(null);
+  attemptRef.current = attempt;
+
+  const loadCoordinatorRef = useRef<AttemptLoadCoordinator | null>(null);
+  const autosaveManagerRef = useRef<AttemptAutosaveManager | null>(null);
+  const countdownControllerRef = useRef<AttemptCountdownController | null>(null);
+
+  const setWorkspaceLocked = (locked: boolean) => {
+    workspaceLockedRef.current = locked;
+    autosaveManagerRef.current?.setInputLocked(locked);
+  };
+
+  const loadAttemptRef = useRef<
+    (
+      isInitial?: boolean,
+      options?: { throwOnBackgroundError?: boolean },
+    ) => Promise<AttemptDetailRead | null>
+  >(async () => null);
+
+  const createAutosaveManager = useCallback(
+    () =>
+      new AttemptAutosaveManager({
+        saveAnswer: (attId, qId, payload) =>
+          apiSaveAnswer(attId, qId, payload, csrfTokenRef.current),
+        getAttempt: (attId) => apiGetAttempt(attId),
+        onAttemptTerminated: () => {
+          if (loadCoordinatorRef.current?.isCurrentSession()) {
+            void loadAttemptRef.current(false);
+          }
+        },
+        onStateChange: (views) => {
+          setAutosaveViews(views);
+        },
+      }),
+    [],
   );
 
-  useEffect(() => {
-    loadAttempt(true);
-  }, [loadAttempt]);
+  if (!autosaveManagerRef.current) {
+    autosaveManagerRef.current = createAutosaveManager();
+  }
 
-  // -------------------------------------------------------------------------
-  // 2. Countdown Timer
-  // -------------------------------------------------------------------------
-  useEffect(() => {
-    if (remainingSeconds === null || remainingSeconds <= 0) return;
-
-    const timer = setInterval(() => {
-      setRemainingSeconds((prev) => {
-        if (prev === null) return null;
-        if (prev <= 1) {
-          clearInterval(timer);
-          // Zero reached: trigger authoritative backend sync
-          loadAttempt(false);
-          return 0;
+  if (!countdownControllerRef.current) {
+    countdownControllerRef.current = new AttemptCountdownController({
+      refreshAttempt: () =>
+        loadAttemptRef.current(false, { throwOnBackgroundError: true }),
+      onRemainingSecondsChange: (secs) => {
+        if (isMountedRef.current) {
+          setRemainingSeconds(secs);
         }
-        return prev - 1;
-      });
-    }, 1000);
+      },
+      onRefreshError: (error) => {
+        if (isMountedRef.current) {
+          setCountdownRefreshError(error);
+        }
+      },
+      onTerminalAttempt: (terminalAttempt) => {
+        if (!isMountedRef.current) return;
+        autosaveManagerRef.current?.dispose();
+        setAttempt(terminalAttempt);
+        setRemainingSeconds(0);
+        navigationBypassRef.current = true;
+        navigateRef.current(`/attempts/${terminalAttempt.attempt_id}/result`, {
+          replace: true,
+        });
+      },
+    });
+  }
 
-    return () => clearInterval(timer);
-  }, [remainingSeconds, loadAttempt]);
+  if (!loadCoordinatorRef.current) {
+    loadCoordinatorRef.current = new AttemptLoadCoordinator({
+      getAttempt: (attId) => apiGetAttempt(attId),
+      hasLoadedAttempt: () => attemptRef.current !== null,
+      onLoadingChange: setIsLoading,
+      onLoadError: setLoadError,
+      onHydrateActiveAttempt: (data) => {
+        autosaveManagerRef.current?.hydrateFromAttempt(data);
+        setAttempt(data);
+        countdownControllerRef.current?.syncFromAttempt(data);
+      },
+      onSyncTerminalAttempt: (data) => {
+        countdownControllerRef.current?.syncFromAttempt(data);
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 1. Authoritative Attempt Loader & Route Lifecycle Management
+  // -------------------------------------------------------------------------
+  const loadAttempt = useCallback(
+    (
+      isInitial = false,
+      options?: { throwOnBackgroundError?: boolean },
+    ): Promise<AttemptDetailRead | null> =>
+      loadCoordinatorRef.current!.loadAttempt(attemptId, isInitial, options),
+    [attemptId],
+  );
+
+  loadAttemptRef.current = loadAttempt;
+
+  useEffect(() => {
+    const coordinator = loadCoordinatorRef.current!;
+    const countdownController = countdownControllerRef.current!;
+
+    isMountedRef.current = true;
+    const { routeChanged } = coordinator.activateRoute(attemptId);
+
+    if (!hasInitializedRouteRef.current) {
+      hasInitializedRouteRef.current = true;
+    } else if (routeChanged) {
+      // Switching to a different attempt route: replace autosaveManager so any
+      // in-flight writes from the previous attempt remain permanently disposed,
+      // and clear previous attempt UI state before loading the new attempt.
+      autosaveManagerRef.current = createAutosaveManager();
+      attemptRef.current = null;
+      setAttempt(null);
+      setLoadError(null);
+      setCurrentIndex(0);
+      setAutosaveViews({});
+      setRemainingSeconds(null);
+      setCountdownRefreshError(null);
+      setShowSubmitModal(false);
+      setIsSubmitting(false);
+      submittingRef.current = false;
+      workspaceLockedRef.current = false;
+      navigationBypassRef.current = false;
+      navigationFlushInProgressRef.current = false;
+      setSubmitError(null);
+      setNavigationSaveError(null);
+      setIsLoading(true);
+    }
+
+    const activeAutosaveManager = autosaveManagerRef.current!;
+    activeAutosaveManager.activate();
+    countdownController.activate();
+    void loadAttempt(true);
+
+    return () => {
+      isMountedRef.current = false;
+      coordinator.deactivate();
+      autosaveManagerRef.current?.dispose();
+      countdownController.dispose();
+    };
+  }, [attemptId, createAutosaveManager, loadAttempt]);
+
+  // Block SPA route changes while an active attempt has unacknowledged answers.
+  const navigationBlocker = useBlocker(({ currentLocation, nextLocation }) => {
+    const locationChanges =
+      currentLocation.pathname !== nextLocation.pathname ||
+      currentLocation.search !== nextLocation.search ||
+      currentLocation.hash !== nextLocation.hash;
+    if (!locationChanges || navigationBypassRef.current) return false;
+    if (submittingRef.current) return true;
+    if (attemptRef.current?.status !== 'IN_PROGRESS') return false;
+
+    const manager = autosaveManagerRef.current;
+    if (!manager?.hasUnacknowledgedChanges()) return false;
+
+    // Lock synchronously in the blocker callback so no new answer can slip in
+    // between the route transition and the asynchronous flush effect.
+    setWorkspaceLocked(true);
+    return true;
+  });
+  const navigationBlockerRef = useRef(navigationBlocker);
+  navigationBlockerRef.current = navigationBlocker;
+  const navigationBlockerState = navigationBlocker.state;
+
+  useEffect(() => {
+    if (navigationBlockerState !== 'blocked') {
+      navigationFlushInProgressRef.current = false;
+      return;
+    }
+    if (navigationFlushInProgressRef.current) return;
+
+    const activeBlocker = navigationBlockerRef.current;
+    if (submittingRef.current) {
+      setNavigationSaveError(
+        'Navigation was stopped because submission is in progress. Stay on this page until the submission finishes.',
+      );
+      if (activeBlocker.state === 'blocked') activeBlocker.reset();
+      return;
+    }
+
+    const manager = autosaveManagerRef.current;
+    if (!manager) {
+      if (activeBlocker.state === 'blocked') activeBlocker.reset();
+      return;
+    }
+
+    navigationFlushInProgressRef.current = true;
+    let effectActive = true;
+
+    void flushAttemptBeforeNavigation(manager)
+      .then((result) => {
+        if (!effectActive) return;
+        const currentBlocker = navigationBlockerRef.current;
+        if (currentBlocker.state !== 'blocked') return;
+
+        if (result.ok || result.terminated) {
+          currentBlocker.proceed();
+          return;
+        }
+
+        const issues: string[] = [];
+        if (result.failedQuestionIds.length > 0) {
+          issues.push(`${result.failedQuestionIds.length} failed save(s)`);
+        }
+        if (result.conflictQuestionIds.length > 0) {
+          issues.push(`${result.conflictQuestionIds.length} conflict(s)`);
+        }
+        if ((result.pendingQuestionIds?.length ?? 0) > 0) {
+          issues.push(`${result.pendingQuestionIds!.length} unsettled save(s)`);
+        }
+        setNavigationSaveError(
+          `Navigation was stopped because ${issues.join(' and ') || 'some answers'} could not be confirmed on the server. Retry or resolve the save issue, then navigate again. Your exam remains open.`,
+        );
+        setWorkspaceLocked(false);
+        currentBlocker.reset();
+      })
+      .catch((error: unknown) => {
+        if (!effectActive) return;
+        setWorkspaceLocked(false);
+        const currentBlocker = navigationBlockerRef.current;
+        if (currentBlocker.state === 'blocked') {
+          const detail = error instanceof Error ? error.message : 'Unknown save error.';
+          setNavigationSaveError(
+            `Navigation was stopped because pending answers could not be saved (${detail}). Retry the save before leaving.`,
+          );
+          currentBlocker.reset();
+        }
+      })
+      .finally(() => {
+        navigationFlushInProgressRef.current = false;
+      });
+
+    return () => {
+      effectActive = false;
+    };
+  }, [navigationBlockerState]);
+
+  // Warn before unloading tab/window if unacknowledged changes exist
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const manager = autosaveManagerRef.current;
+      if (
+        attempt?.status === 'IN_PROGRESS' &&
+        manager &&
+        manager.hasUnacknowledgedChanges()
+      ) {
+        void manager.flushBeforeSubmit();
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [attempt?.status]);
+
+  useEffect(() => {
+    const backgroundNodes = [workspaceHeaderRef.current, workspaceBodyRef.current];
+    for (const node of backgroundNodes) {
+      if (!node) continue;
+      if (showSubmitModal) {
+        node.setAttribute('inert', '');
+        node.setAttribute('aria-hidden', 'true');
+      } else {
+        node.removeAttribute('inert');
+        node.removeAttribute('aria-hidden');
+      }
+    }
+  }, [showSubmitModal]);
+
+  useEffect(() => {
+    if (!showSubmitModal) return;
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = submitDialogRef.current;
+    const focusableSelector =
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+    const getFocusable = () =>
+      dialog
+        ? Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector))
+        : [];
+
+    const firstFocusable = getFocusable()[0];
+    (firstFocusable ?? dialog)?.focus();
+
+    const handleDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (!submittingRef.current) handleCloseSubmitModal();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleDialogKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleDialogKeyDown);
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+    };
+  }, [showSubmitModal]);
 
   // -------------------------------------------------------------------------
   // 3. Question Navigation & Computed Stats
   // -------------------------------------------------------------------------
   const questions: StudentQuestionRead[] = useMemo(() => {
-    return attempt?.questions ?? [];
-  }, [attempt]);
+    const rawQuestions = attempt?.questions ?? [];
+    return rawQuestions.map((q) => {
+      const view = autosaveViews[q.exam_question_id];
+      if (!view) return q;
+      return {
+        ...q,
+        answer: {
+          selected_option_id: view.local.selected_option_id,
+          marked_for_review: view.local.marked_for_review,
+          revision: view.server.revision,
+        },
+      };
+    });
+  }, [attempt, autosaveViews]);
 
   const currentQuestion: StudentQuestionRead | undefined = questions[currentIndex];
 
@@ -138,6 +444,48 @@ export function AttemptWorkspacePage() {
   const answeredCount = questions.filter((q) => q.answer.selected_option_id !== null).length;
   const flaggedCount = questions.filter((q) => q.answer.marked_for_review).length;
   const unansweredCount = totalQuestions - answeredCount;
+
+  const saveSummary = useMemo(() => {
+    let pending = 0;
+    let saving = 0;
+    let failed = 0;
+    let conflict = 0;
+    const unresolvedQuestions: Array<{
+      index: number;
+      questionId: string;
+      status: 'failed' | 'conflict';
+    }> = [];
+
+    questions.forEach((q, index) => {
+      const status = autosaveViews[q.exam_question_id]?.status ?? 'idle';
+      if (status === 'pending') pending += 1;
+      else if (status === 'saving') saving += 1;
+      else if (status === 'failed') {
+        failed += 1;
+        unresolvedQuestions.push({
+          index,
+          questionId: q.exam_question_id,
+          status: 'failed',
+        });
+      } else if (status === 'conflict') {
+        conflict += 1;
+        unresolvedQuestions.push({
+          index,
+          questionId: q.exam_question_id,
+          status: 'conflict',
+        });
+      }
+    });
+
+    return {
+      pending,
+      saving,
+      failed,
+      conflict,
+      unacknowledged: pending + saving + failed + conflict,
+      unresolvedQuestions,
+    };
+  }, [questions, autosaveViews]);
 
   // Format countdown mm:ss or hh:mm:ss
   const formatTime = (secs: number) => {
@@ -151,181 +499,93 @@ export function AttemptWorkspacePage() {
   };
 
   // -------------------------------------------------------------------------
-  // 4. Durable Answer Saving
+  // 4. Durable Answer Saving & Navigation Flushing
   // -------------------------------------------------------------------------
-  const persistAnswer = async (
-    qId: string,
-    selectedOptionId: string | null,
-    markedForReview: boolean,
-    expectedRevision: number,
-  ) => {
-    if (!attemptId) return;
-
-    inFlightSavesRef.current.add(qId);
-    setSaveStatuses((prev) => ({ ...prev, [qId]: 'saving' }));
-    setSaveErrors((prev) => {
-      const next = { ...prev };
-      delete next[qId];
-      return next;
-    });
-
-    try {
-      const resp = await apiSaveAnswer(
-        attemptId,
-        qId,
-        {
-          selected_option_id: selectedOptionId,
-          marked_for_review: markedForReview,
-          expected_revision: expectedRevision,
-        },
-        csrfToken,
-      );
-
-      // Server confirmed save: update authoritative local state
-      setAttempt((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          questions: prev.questions.map((q) =>
-            q.exam_question_id === qId
-              ? {
-                  ...q,
-                  answer: {
-                    selected_option_id: resp.selected_option_id,
-                    marked_for_review: resp.marked_for_review,
-                    revision: resp.revision,
-                  },
-                }
-              : q,
-          ),
-        };
-      });
-
-      setSaveStatuses((prev) => ({ ...prev, [qId]: 'saved' }));
-    } catch (err: unknown) {
-      if (err instanceof RevisionConflictError) {
-        // 409 Conflict: reconcile with canonical server state
-        const canonical = err.canonicalState;
-        setAttempt((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            questions: prev.questions.map((q) =>
-              q.exam_question_id === qId
-                ? {
-                    ...q,
-                    answer: {
-                      selected_option_id: canonical.selected_option_id,
-                      marked_for_review: canonical.marked_for_review,
-                      revision: canonical.revision,
-                    },
-                  }
-                : q,
-            ),
-          };
-        });
-        setSaveStatuses((prev) => ({ ...prev, [qId]: 'failed' }));
-        setSaveErrors((prev) => ({
-          ...prev,
-          [qId]: 'Answer was modified in another session. Synchronized with server.',
-        }));
-      } else {
-        const msg = err instanceof Error ? err.message : 'Save failed. Please retry.';
-        setSaveStatuses((prev) => ({ ...prev, [qId]: 'failed' }));
-        setSaveErrors((prev) => ({ ...prev, [qId]: msg }));
-      }
-    } finally {
-      inFlightSavesRef.current.delete(qId);
+  const navigateToQuestion = (nextIndex: number) => {
+    if (workspaceLockedRef.current || nextIndex === currentIndex) return;
+    if (currentQuestion && attempt?.status === 'IN_PROGRESS') {
+      void autosaveManagerRef.current?.flushQuestion(currentQuestion.exam_question_id);
     }
+    setCurrentIndex(nextIndex);
   };
 
   const handleSelectOption = (optionId: string) => {
-    if (!currentQuestion || attempt?.status !== 'IN_PROGRESS') return;
-    const currentSelected = currentQuestion.answer.selected_option_id;
-    // Allow toggle deselect if student clicks active option, or select new
-    const nextSelected = currentSelected === optionId ? null : optionId;
-
-    // Optimistically update local view while flight persists
-    setAttempt((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        questions: prev.questions.map((q, idx) =>
-          idx === currentIndex
-            ? {
-                ...q,
-                answer: {
-                  ...q.answer,
-                  selected_option_id: nextSelected,
-                },
-              }
-            : q,
-        ),
-      };
-    });
-
-    persistAnswer(
-      currentQuestion.exam_question_id,
-      nextSelected,
-      currentQuestion.answer.marked_for_review,
-      currentQuestion.answer.revision,
-    );
+    if (workspaceLockedRef.current || !currentQuestion || attempt?.status !== 'IN_PROGRESS') return;
+    autosaveManagerRef.current?.selectOption(currentQuestion.exam_question_id, optionId);
   };
 
   const handleToggleReview = () => {
-    if (!currentQuestion || attempt?.status !== 'IN_PROGRESS') return;
-    const nextFlag = !currentQuestion.answer.marked_for_review;
+    if (workspaceLockedRef.current || !currentQuestion || attempt?.status !== 'IN_PROGRESS') return;
+    autosaveManagerRef.current?.toggleReview(currentQuestion.exam_question_id);
+  };
 
-    setAttempt((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        questions: prev.questions.map((q, idx) =>
-          idx === currentIndex
-            ? {
-                ...q,
-                answer: {
-                  ...q.answer,
-                  marked_for_review: nextFlag,
-                },
-              }
-            : q,
-        ),
-      };
-    });
+  const handleRetrySave = (qId: string) => {
+    if (workspaceLockedRef.current || attempt?.status !== 'IN_PROGRESS') return;
+    void autosaveManagerRef.current?.retryQuestion(qId);
+  };
 
-    persistAnswer(
-      currentQuestion.exam_question_id,
-      currentQuestion.answer.selected_option_id,
-      nextFlag,
-      currentQuestion.answer.revision,
-    );
+  const handleResolveConflictLocal = (qId: string) => {
+    if (workspaceLockedRef.current || attempt?.status !== 'IN_PROGRESS') return;
+    void autosaveManagerRef.current?.resolveConflictWithLocal(qId);
+  };
+
+  const handleResolveConflictServer = (qId: string) => {
+    if (workspaceLockedRef.current || attempt?.status !== 'IN_PROGRESS') return;
+    autosaveManagerRef.current?.resolveConflictWithServer(qId);
   };
 
   // -------------------------------------------------------------------------
   // 5. Final Submission
   // -------------------------------------------------------------------------
-  const handleSubmit = async () => {
-    if (!attemptId || isSubmitting) return;
-
-    // Check if any saves are still in flight
-    if (inFlightSavesRef.current.size > 0) {
-      setSubmitError('Answers are currently saving. Please wait a moment before submitting.');
-      return;
-    }
-
-    setIsSubmitting(true);
+  const handleOpenSubmitModal = () => {
+    if (workspaceLockedRef.current || attempt?.status !== 'IN_PROGRESS') return;
+    setWorkspaceLocked(true);
     setSubmitError(null);
+    setShowSubmitModal(true);
+    void autosaveManagerRef.current?.flushPendingWrites();
+  };
 
-    try {
-      await apiSubmitAttempt(attemptId, {}, csrfToken);
-      setShowSubmitModal(false);
-      navigate(`/attempts/${attemptId}/result`, { replace: true });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Submission failed. Please try again.';
-      setSubmitError(msg);
-      setIsSubmitting(false);
-    }
+  const handleCloseSubmitModal = () => {
+    if (submittingRef.current) return;
+    setWorkspaceLocked(false);
+    setShowSubmitModal(false);
+  };
+
+  const handleSubmit = async () => {
+    const manager = autosaveManagerRef.current;
+    const coordinator = loadCoordinatorRef.current;
+    if (!manager || !coordinator || submittingRef.current || !coordinator.isCurrentSession()) return;
+
+    // The ref closes the double-click window before React commits state updates.
+    submittingRef.current = true;
+    setWorkspaceLocked(true);
+    const sessionToken = coordinator.captureSession();
+    await executeAttemptSubmission({
+      attemptId,
+      isSubmitting: false,
+      isCurrentSession: () => coordinator.isSessionActive(sessionToken),
+      flushBeforeSubmit: () => manager.flushBeforeSubmit(),
+      refreshAttempt: () =>
+        coordinator.loadAttempt(attemptId, false, {
+          throwOnBackgroundError: true,
+        }),
+      submitAttempt: (id) => apiSubmitAttempt(id, {}, csrfTokenRef.current),
+      onSubmittingChange: (value) => {
+        submittingRef.current = value;
+        setIsSubmitting(value);
+      },
+      onSubmitError: setSubmitError,
+      onModalOpenChange: (open) => {
+        setShowSubmitModal(open);
+        if (!open) setWorkspaceLocked(false);
+      },
+      onSubmissionSuccess: (id) => {
+        countdownControllerRef.current?.dispose();
+        manager.dispose();
+        navigationBypassRef.current = true;
+        navigateRef.current(`/attempts/${id}/result`, { replace: true });
+      },
+    });
   };
 
   // -------------------------------------------------------------------------
@@ -364,13 +624,26 @@ export function AttemptWorkspacePage() {
   }
 
   const isTimeCritical = (remainingSeconds ?? 100) < 300; // Under 5 mins
-  const activeQSaveStatus = currentQuestion ? saveStatuses[currentQuestion.exam_question_id] ?? 'idle' : 'idle';
-  const activeQSaveError = currentQuestion ? saveErrors[currentQuestion.exam_question_id] : null;
+  const activeQView = currentQuestion ? autosaveViews[currentQuestion.exam_question_id] : undefined;
+  const activeQSaveStatus: QuestionSaveStatus = activeQView?.status ?? 'idle';
+  const activeQSaveError = activeQView?.errorMessage ?? null;
+  const activeQConflictServer = activeQView?.conflictServerState ?? null;
+  const serverConflictOptionText =
+    activeQConflictServer && currentQuestion
+      ? activeQConflictServer.selected_option_id === null
+        ? 'Unanswered'
+        : currentQuestion.options.find((o) => o.id === activeQConflictServer.selected_option_id)
+            ?.text ?? 'Unknown option'
+      : null;
 
   return (
     <div className="workspace-layout">
       {/* Workspace Top Bar */}
-      <header className="workspace-header" role="banner">
+      <header
+        ref={workspaceHeaderRef}
+        className="workspace-header"
+        role="banner"
+      >
         <div className="workspace-header__meta">
           <span className="workspace-badge">EXAM RUNTIME</span>
           <h1 className="workspace-title">{attempt.exam.title}</h1>
@@ -396,8 +669,8 @@ export function AttemptWorkspacePage() {
           <button
             type="button"
             className="btn btn--primary"
-            onClick={() => setShowSubmitModal(true)}
-            disabled={inFlightSavesRef.current.size > 0}
+            onClick={handleOpenSubmitModal}
+            disabled={isSubmitting}
           >
             <Send className="btn__icon" aria-hidden="true" /> Finish & Submit
           </button>
@@ -405,9 +678,86 @@ export function AttemptWorkspacePage() {
       </header>
 
       {/* Main Workspace Body */}
-      <div className="workspace-body">
+      <div ref={workspaceBodyRef} className="workspace-body">
         {/* Left Side: Question Pane */}
         <main className="workspace-question-pane" id="main-content">
+          {countdownRefreshError && (
+            <div
+              className="inline-error workspace-save-alert"
+              role="alert"
+              aria-live="assertive"
+            >
+              <AlertCircle className="inline-error__icon" aria-hidden="true" />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0 }}>{countdownRefreshError.message}</p>
+                <div className="save-banner-actions">
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--sm"
+                    onClick={() => void countdownControllerRef.current?.triggerRefresh()}
+                  >
+                    <RotateCcw size={13} aria-hidden="true" /> Retry status check
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--sm"
+                    onClick={() => navigateRef.current('/exams/available')}
+                  >
+                    Return to Available Exams
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {navigationSaveError && (
+            <div className="inline-warning workspace-save-alert" role="alert">
+              <AlertTriangle size={18} style={{ flexShrink: 0 }} aria-hidden="true" />
+              <div style={{ flex: 1 }}>
+                <span>{navigationSaveError}</span>
+                <div className="save-banner-actions">
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--sm"
+                    onClick={() => setNavigationSaveError(null)}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {(saveSummary.failed > 0 || saveSummary.conflict > 0) && (
+            <div
+              className={saveSummary.failed > 0 ? 'inline-error workspace-save-alert' : 'inline-warning workspace-save-alert'}
+              role="status"
+              aria-live="polite"
+            >
+              <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '0.125rem' }} aria-hidden="true" />
+              <div style={{ flex: 1 }}>
+                <span>
+                  Unresolved save issues across your exam:{' '}
+                  {saveSummary.failed > 0 && <strong>{saveSummary.failed} failed</strong>}
+                  {saveSummary.failed > 0 && saveSummary.conflict > 0 && ', '}
+                  {saveSummary.conflict > 0 && <strong>{saveSummary.conflict} conflict(s)</strong>}.
+                </span>
+                <div className="save-banner-actions">
+                  {saveSummary.unresolvedQuestions.map((item) => (
+                    <button
+                      key={item.questionId}
+                      type="button"
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => navigateToQuestion(item.index)}
+                    >
+                      Q{item.index + 1} ({item.status === 'failed' ? 'Failed' : 'Conflict'})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {currentQuestion ? (
             <div className="question-container">
               {/* Question Header & Status */}
@@ -424,6 +774,11 @@ export function AttemptWorkspacePage() {
                 <div className="question-header__actions">
                   {/* Save Status Indicator */}
                   <div className="save-status-indicator" aria-live="polite">
+                    {activeQSaveStatus === 'pending' && (
+                      <span className="save-status save-status--pending">
+                        <Clock size={13} aria-hidden="true" /> Pending save…
+                      </span>
+                    )}
                     {activeQSaveStatus === 'saving' && (
                       <span className="save-status save-status--saving">
                         <Loader2 size={13} className="spinner__icon" aria-hidden="true" /> Saving…
@@ -435,8 +790,22 @@ export function AttemptWorkspacePage() {
                       </span>
                     )}
                     {activeQSaveStatus === 'failed' && (
-                      <span className="save-status save-status--failed">
-                        <AlertTriangle size={13} aria-hidden="true" /> Save failed
+                      <span className="save-status-actions">
+                        <span className="save-status save-status--failed">
+                          <AlertTriangle size={13} aria-hidden="true" /> Save failed
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--sm"
+                          onClick={() => handleRetrySave(currentQuestion.exam_question_id)}
+                        >
+                          <RotateCcw size={12} aria-hidden="true" /> Retry
+                        </button>
+                      </span>
+                    )}
+                    {activeQSaveStatus === 'conflict' && (
+                      <span className="save-status save-status--conflict">
+                        <AlertTriangle size={13} aria-hidden="true" /> Conflict
                       </span>
                     )}
                   </div>
@@ -455,10 +824,54 @@ export function AttemptWorkspacePage() {
                 </div>
               </div>
 
-              {activeQSaveError && (
+              {activeQSaveStatus === 'failed' && activeQSaveError && (
                 <div className="inline-error" style={{ marginBottom: '1rem' }} role="alert">
                   <AlertCircle className="inline-error__icon" aria-hidden="true" />
-                  <span>{activeQSaveError}</span>
+                  <div style={{ flex: 1 }}>
+                    <span>{activeQSaveError}</span>
+                    <div className="save-banner-actions">
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => handleRetrySave(currentQuestion.exam_question_id)}
+                      >
+                        <RotateCcw size={13} aria-hidden="true" /> Retry Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeQSaveStatus === 'conflict' && activeQConflictServer && (
+                <div className="inline-warning" style={{ marginBottom: '1rem', alignItems: 'flex-start' }} role="alert">
+                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '0.125rem' }} aria-hidden="true" />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0 }}>
+                      {activeQSaveError ??
+                        'Another session modified this question on the server. Your unsaved selection is preserved.'}
+                    </p>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem' }}>
+                      Server answer (rev {activeQConflictServer.revision}):{' '}
+                      <strong>{serverConflictOptionText}</strong>
+                      {activeQConflictServer.marked_for_review ? ' · Marked for review' : ''}
+                    </p>
+                    <div className="save-banner-actions">
+                      <button
+                        type="button"
+                        className="btn btn--primary btn--sm"
+                        onClick={() => handleResolveConflictLocal(currentQuestion.exam_question_id)}
+                      >
+                        Save My Selection
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => handleResolveConflictServer(currentQuestion.exam_question_id)}
+                      >
+                        Use Server Answer
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -505,7 +918,7 @@ export function AttemptWorkspacePage() {
                 <button
                   type="button"
                   className="btn btn--ghost"
-                  onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                  onClick={() => navigateToQuestion(Math.max(0, currentIndex - 1))}
                   disabled={currentIndex === 0}
                 >
                   <ChevronLeft className="btn__icon" aria-hidden="true" /> Previous
@@ -518,7 +931,7 @@ export function AttemptWorkspacePage() {
                 <button
                   type="button"
                   className="btn btn--ghost"
-                  onClick={() => setCurrentIndex((prev) => Math.min(totalQuestions - 1, prev + 1))}
+                  onClick={() => navigateToQuestion(Math.min(totalQuestions - 1, currentIndex + 1))}
                   disabled={currentIndex === totalQuestions - 1}
                 >
                   Next <ChevronRight className="btn__icon" aria-hidden="true" />
@@ -561,23 +974,33 @@ export function AttemptWorkspacePage() {
                 const isCurrent = idx === currentIndex;
                 const isAnswered = q.answer.selected_option_id !== null;
                 const isFlagged = q.answer.marked_for_review;
+                const qSaveStatus = autosaveViews[q.exam_question_id]?.status ?? 'idle';
+                const hasFailed = qSaveStatus === 'failed';
+                const hasConflict = qSaveStatus === 'conflict';
 
                 return (
                   <button
                     key={q.exam_question_id}
                     type="button"
-                    onClick={() => setCurrentIndex(idx)}
+                    onClick={() => navigateToQuestion(idx)}
                     className={`palette-btn ${
                       isCurrent ? 'palette-btn--current' : ''
                     } ${isAnswered ? 'palette-btn--answered' : 'palette-btn--unanswered'} ${
                       isFlagged ? 'palette-btn--flagged' : ''
+                    } ${hasFailed ? 'palette-btn--failed' : ''} ${
+                      hasConflict ? 'palette-btn--conflict' : ''
                     }`}
                     aria-current={isCurrent ? 'step' : undefined}
                     aria-label={`Question ${idx + 1}: ${
                       isAnswered ? 'Answered' : 'Unanswered'
-                    }${isFlagged ? ', Flagged for review' : ''}`}
+                    }${isFlagged ? ', Flagged for review' : ''}${
+                      hasFailed ? ', Save failed' : hasConflict ? ', Save conflict' : ''
+                    }`}
                   >
                     <span className="palette-btn__num">{idx + 1}</span>
+                    {(hasFailed || hasConflict) && (
+                      <span className="palette-btn__issue" aria-hidden="true">!</span>
+                    )}
                     {isFlagged && <span className="palette-btn__flag" aria-hidden="true">⚑</span>}
                     {isAnswered && !isFlagged && <span className="palette-btn__check" aria-hidden="true">✓</span>}
                   </button>
@@ -600,7 +1023,7 @@ export function AttemptWorkspacePage() {
       {/* Submit Confirmation Dialog Modal */}
       {showSubmitModal && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-          <div className="modal-content">
+          <div ref={submitDialogRef} className="modal-content" tabIndex={-1}>
             <div className="modal-header">
               <div className="modal-header__title-row">
                 <CheckCircle className="text-accent" size={24} aria-hidden="true" />
@@ -611,7 +1034,7 @@ export function AttemptWorkspacePage() {
               <button
                 type="button"
                 className="btn-icon"
-                onClick={() => setShowSubmitModal(false)}
+                onClick={handleCloseSubmitModal}
                 disabled={isSubmitting}
                 aria-label="Close dialog"
               >
@@ -639,6 +1062,24 @@ export function AttemptWorkspacePage() {
                 </div>
               </div>
 
+              {saveSummary.unacknowledged > 0 && (
+                <div className="inline-warning" style={{ marginTop: '1rem' }} role="status">
+                  <AlertTriangle size={16} aria-hidden="true" />
+                  <span>
+                    {saveSummary.failed > 0 || saveSummary.conflict > 0 ? (
+                      <>
+                        You have <strong>{saveSummary.failed}</strong> failed save(s) and{' '}
+                        <strong>{saveSummary.conflict}</strong> conflict(s). Scoring uses only server-saved answers.
+                      </>
+                    ) : (
+                      <>
+                        Saving <strong>{saveSummary.pending + saveSummary.saving}</strong> pending answer change(s)…
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
+
               {unansweredCount > 0 && (
                 <div className="inline-warning" style={{ marginTop: '1rem' }}>
                   <AlertTriangle size={16} aria-hidden="true" />
@@ -660,7 +1101,7 @@ export function AttemptWorkspacePage() {
               <button
                 type="button"
                 className="btn btn--ghost"
-                onClick={() => setShowSubmitModal(false)}
+                onClick={handleCloseSubmitModal}
                 disabled={isSubmitting}
               >
                 Continue Exam
