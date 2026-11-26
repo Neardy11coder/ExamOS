@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "tsc -b",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "tsc --noEmit -p tsconfig.tests.json && tsx tests/autosave.test.ts && tsx tests/countdown.test.ts && tsx tests/workspaceLifecycle.test.ts"
   },
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
@@ -24,10 +25,11 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
+    "tsx": "^4.23.15",
     "typescript": "~5.6.3",
     "vite": "^6.4.6"
   },
   "allowScripts": {
-    "esbuild@0.25.12": true
+    "esbuild@0.25.12 || 0.28.2": true
   }
 }

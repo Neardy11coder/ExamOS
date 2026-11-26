@@ -700,3 +700,230 @@ class TestFacultyAttemptList:
         cookies, headers = auth_cookies_and_headers(student_user)
         resp = client.get(f"{_EXAMS_URL}/{published_exam.id}/attempts", cookies=cookies, headers=headers)
         assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+
+# ===========================================================================
+# 8. Remaining Seconds, Lock-Then-Clock Ordering & Lazy Finalization Paths
+# ===========================================================================
+
+class TestRemainingSecondsAndExpiryOrdering:
+    def test_calculate_remaining_seconds_boundaries(self):
+        """
+        Sub-second positive remaining duration (0.8s) returns a positive integer (1),
+        while exact zero and past deadlines return 0.
+        """
+        from app.services.attempt_service import _calculate_remaining_seconds
+
+        deadline = datetime(2026, 11, 26, 12, 0, 10, tzinfo=timezone.utc)
+        assert (
+            _calculate_remaining_seconds(
+                status="IN_PROGRESS",
+                deadline_at=deadline,
+                now=deadline - timedelta(milliseconds=800),
+            )
+            == 1
+        )
+        assert (
+            _calculate_remaining_seconds(
+                status="IN_PROGRESS",
+                deadline_at=deadline,
+                now=deadline,
+            )
+            == 0
+        )
+        assert (
+            _calculate_remaining_seconds(
+                status="IN_PROGRESS",
+                deadline_at=deadline,
+                now=deadline + timedelta(seconds=5),
+            )
+            == 0
+        )
+        assert (
+            _calculate_remaining_seconds(
+                status="EXPIRED",
+                deadline_at=deadline,
+                now=deadline - timedelta(seconds=5),
+            )
+            == 0
+        )
+
+    def test_subsecond_remaining_attempt_stays_in_progress_and_reports_positive(
+        self,
+        client: TestClient,
+        test_db_session: Session,
+        student_user: User,
+        published_exam: Exam,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        """
+        An attempt 0.8 seconds before its deadline remains IN_PROGRESS and returns
+        remaining_seconds >= 1 (never truncated to 0).
+        """
+        from app.services import attempt_service
+
+        cookies, headers = auth_cookies_and_headers(student_user)
+        start_resp = client.post(
+            f"{_EXAMS_URL}/{published_exam.id}/attempts/start",
+            cookies=cookies,
+            headers=headers,
+        )
+        attempt_id = start_resp.json()["attempt_id"]
+        att = test_db_session.get(Attempt, uuid.UUID(attempt_id))
+        assert att is not None
+
+        near_deadline = att.deadline_at - timedelta(milliseconds=800)
+        monkeypatch.setattr(attempt_service, "_get_db_now", lambda _db: near_deadline)
+
+        get_resp = client.get(f"{_ATTEMPTS_URL}/{attempt_id}", cookies=cookies, headers=headers)
+        assert get_resp.status_code == status.HTTP_200_OK
+        data = get_resp.json()
+        assert data["status"] == "IN_PROGRESS"
+        assert data["remaining_seconds"] == 1
+
+        test_db_session.refresh(att)
+        assert att.status == "IN_PROGRESS"
+        assert att.finalized_at is None
+
+    def test_decision_time_equal_to_deadline_finalizes_as_expired(
+        self,
+        client: TestClient,
+        test_db_session: Session,
+        student_user: User,
+        published_exam: Exam,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        """
+        Exclusive deadline rule (Appendix A.2): decision_time == deadline_at is expired.
+        """
+        from app.services import attempt_service
+
+        cookies, headers = auth_cookies_and_headers(student_user)
+        start_resp = client.post(
+            f"{_EXAMS_URL}/{published_exam.id}/attempts/start",
+            cookies=cookies,
+            headers=headers,
+        )
+        attempt_id = start_resp.json()["attempt_id"]
+        att = test_db_session.get(Attempt, uuid.UUID(attempt_id))
+        assert att is not None
+
+        exact_deadline = att.deadline_at
+        monkeypatch.setattr(attempt_service, "_get_db_now", lambda _db: exact_deadline)
+
+        get_resp = client.get(f"{_ATTEMPTS_URL}/{attempt_id}", cookies=cookies, headers=headers)
+        assert get_resp.status_code == status.HTTP_200_OK
+        data = get_resp.json()
+        assert data["status"] == "EXPIRED"
+        assert data["remaining_seconds"] == 0
+
+        test_db_session.refresh(att)
+        assert att.status == "EXPIRED"
+        assert att.finalized_at == exact_deadline
+
+    def test_expiry_finalization_reads_clock_after_row_lock(
+        self,
+        client: TestClient,
+        test_db_session: Session,
+        faculty_user: User,
+        student_user: User,
+        published_exam: Exam,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        """
+        Verifies _check_and_finalize_if_expired acquires the Attempt FOR UPDATE row lock
+        before reading clock_timestamp(), and list_exam_attempts does not reuse a stale
+        pre-lock timestamp for finalized_at.
+        """
+        from app.services import attempt_service
+
+        s_cookies, s_headers = auth_cookies_and_headers(student_user)
+        start_resp = client.post(
+            f"{_EXAMS_URL}/{published_exam.id}/attempts/start",
+            cookies=s_cookies,
+            headers=s_headers,
+        )
+        attempt_id = start_resp.json()["attempt_id"]
+        att = test_db_session.get(Attempt, uuid.UUID(attempt_id))
+        assert att is not None
+
+        pre_lock_time = att.deadline_at + timedelta(seconds=1)
+        post_lock_time = att.deadline_at + timedelta(seconds=42)
+
+        events: list[str] = []
+        original_scalars = test_db_session.scalars
+        clock_calls = iter([pre_lock_time, post_lock_time])
+
+        def tracked_scalars(stmt, *args, **kwargs):
+            if getattr(stmt, "_for_update_arg", None) is not None:
+                events.append("for_update_lock")
+            return original_scalars(stmt, *args, **kwargs)
+
+        def tracked_clock(_db):
+            events.append("clock_timestamp")
+            return next(clock_calls)
+
+        monkeypatch.setattr(test_db_session, "scalars", tracked_scalars)
+        monkeypatch.setattr(attempt_service, "_get_db_now", tracked_clock)
+
+        items = attempt_service.list_exam_attempts(test_db_session, exam_id=published_exam.id)
+        assert len(items) == 1
+        assert items[0].status == "EXPIRED"
+        assert items[0].finalized_at == post_lock_time
+        assert events == ["clock_timestamp", "for_update_lock", "clock_timestamp"]
+
+    def test_lazy_finalization_access_paths_for_overdue_attempts(
+        self,
+        client: TestClient,
+        test_db_session: Session,
+        student_user: User,
+        published_exam: Exam,
+    ):
+        """
+        All lazy-finalization access paths (start_attempt idempotency, list_available_exams,
+        get_attempt_result) continue to finalize overdue IN_PROGRESS attempts as EXPIRED.
+        """
+        cookies, headers = auth_cookies_and_headers(student_user)
+        start_resp = client.post(
+            f"{_EXAMS_URL}/{published_exam.id}/attempts/start",
+            cookies=cookies,
+            headers=headers,
+        )
+        attempt_id = start_resp.json()["attempt_id"]
+        att = test_db_session.get(Attempt, uuid.UUID(attempt_id))
+        assert att is not None
+
+        # Path 1: GET /exams/available lazily finalizes overdue attempt
+        att.started_at = datetime.now(timezone.utc) - timedelta(hours=2)
+        att.deadline_at = datetime.now(timezone.utc) - timedelta(minutes=2)
+        test_db_session.commit()
+
+        avail_resp = client.get(f"{_EXAMS_URL}/available", cookies=cookies, headers=headers)
+        assert avail_resp.status_code == status.HTTP_200_OK
+        item = next(e for e in avail_resp.json() if e["id"] == str(published_exam.id))
+        assert item["attempt_status"] == "EXPIRED"
+
+        # Path 2: GET /attempts/{id}/result lazily finalizes overdue attempt
+        att.status = "IN_PROGRESS"
+        att.finalized_at = None
+        att.score = None
+        test_db_session.commit()
+
+        res_resp = client.get(f"{_ATTEMPTS_URL}/{attempt_id}/result", cookies=cookies, headers=headers)
+        assert res_resp.status_code == status.HTTP_200_OK
+        assert res_resp.json()["status"] == "EXPIRED"
+
+        # Path 3: POST /exams/{id}/attempts/start (idempotent return) lazily finalizes
+        att.status = "IN_PROGRESS"
+        att.finalized_at = None
+        att.score = None
+        test_db_session.commit()
+
+        restart_resp = client.post(
+            f"{_EXAMS_URL}/{published_exam.id}/attempts/start",
+            cookies=cookies,
+            headers=headers,
+        )
+        assert restart_resp.status_code == status.HTTP_200_OK
+        assert restart_resp.json()["status"] == "EXPIRED"
+        assert restart_resp.json()["remaining_seconds"] == 0

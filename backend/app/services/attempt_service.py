@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+import math
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -95,36 +96,64 @@ def _compute_attempt_score(db: Session, attempt: Attempt) -> Decimal:
     return total
 
 
-def _check_and_finalize_if_expired(db: Session, attempt: Attempt, now: datetime | None = None) -> Attempt:
+def _calculate_remaining_seconds(
+    *,
+    status: str,
+    deadline_at: datetime,
+    now: datetime,
+) -> int:
+    """
+    Computes non-negative display seconds remaining using authoritative DB time.
+    Uses math.ceil for positive sub-second durations so an active attempt strictly
+    before its deadline never reports 0 remaining seconds.
+    """
+    if status in ("SUBMITTED", "EXPIRED"):
+        return 0
+    remaining = (deadline_at - now).total_seconds()
+    if remaining <= 0:
+        return 0
+    return math.ceil(remaining)
+
+
+def _check_and_finalize_if_expired(db: Session, attempt: Attempt) -> Attempt:
     """
     Performs lazy finalization (FR-EXPIRE-001, Appendix A.2):
-    If attempt is IN_PROGRESS and current server/db time is past deadline (now >= deadline_at),
-    atomically finalize as EXPIRED with computed score and commit.
+    Acquires the Attempt row lock first, then reads PostgreSQL clock_timestamp().
+    If attempt is IN_PROGRESS and decision_time >= deadline_at, atomically
+    finalizes as EXPIRED with computed score and commits.
     """
     if attempt.status != "IN_PROGRESS":
         return attempt
 
-    decision_time = now or _get_db_now(db)
+    # Lock attempt row first to serialize finalization and observe latest committed state
+    locked = db.scalars(
+        select(Attempt)
+        .options(selectinload(Attempt.answers))
+        .filter(Attempt.id == attempt.id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    ).first()
+
+    if locked is None:
+        return attempt
+
+    if locked.status != "IN_PROGRESS":
+        return locked
+
+    # Obtain authoritative PostgreSQL clock_timestamp() strictly AFTER row lock acquisition
+    decision_time = _get_db_now(db)
     # Exclusive deadline boundary per Appendix A.2: request timely only if decision_time < deadline_at
-    if decision_time >= attempt.deadline_at:
-        # Lock attempt row to serialize finalization
-        locked = db.scalars(
-            select(Attempt)
-            .filter(Attempt.id == attempt.id)
-            .with_for_update()
-        ).first()
+    if decision_time >= locked.deadline_at:
+        score = _compute_attempt_score(db, locked)
+        locked.status = "EXPIRED"
+        locked.score = score
+        locked.finalized_at = decision_time
+        locked.updated_at = decision_time
+        db.commit()
+        db.refresh(locked)
+        return locked
 
-        if locked and locked.status == "IN_PROGRESS":
-            score = _compute_attempt_score(db, locked)
-            locked.status = "EXPIRED"
-            locked.score = score
-            locked.finalized_at = decision_time
-            locked.updated_at = decision_time
-            db.commit()
-            db.refresh(locked)
-            return locked
-
-    return attempt
+    return locked
 
 
 def _serialize_attempt_detail(db: Session, attempt: Attempt) -> AttemptDetailRead:
@@ -132,10 +161,15 @@ def _serialize_attempt_detail(db: Session, attempt: Attempt) -> AttemptDetailRea
     Serializes full student attempt workspace view.
     Confidentiality: Omits is_correct from question options while attempt is active.
     """
-    now = _get_db_now(db)
-    remaining_secs = max(0, int((attempt.deadline_at - now).total_seconds()))
     if attempt.status in ("SUBMITTED", "EXPIRED"):
         remaining_secs = 0
+    else:
+        now = _get_db_now(db)
+        remaining_secs = _calculate_remaining_seconds(
+            status=attempt.status,
+            deadline_at=attempt.deadline_at,
+            now=now,
+        )
 
     exam = db.get(Exam, attempt.exam_id)
     assert exam is not None
@@ -708,7 +742,7 @@ def list_exam_attempts(
     )
     overdue_attempts = list(db.scalars(overdue_stmt).all())
     for att in overdue_attempts:
-        _check_and_finalize_if_expired(db, att, now=now)
+        _check_and_finalize_if_expired(db, att)
 
     # Load all attempts with student joined
     stmt = (
